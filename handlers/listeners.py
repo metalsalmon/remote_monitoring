@@ -31,11 +31,13 @@ class KafkaConsumer(object):
         t_kafka.start()
 
     def monitoring_listener(self, data):
-
-        monitoring_controller.process_msg(self, data)
+        try:
+            monitoring_controller.process_msg(self, data)
+        except:
+            print("Non registred device") 
 
     def device_info_listener(self, data):
         
-        device_info_controller.process_msg(data)
+        device_info_controller.process_msg(self, data)
     
 

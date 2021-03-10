@@ -30,11 +30,11 @@ services:
     image: postgres
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_NAME}
-      POSTGRES_PASSWORD: ${POSTGRES_PW}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASS}
+      POSTGRES_DB: ${DATABASE_NAME}
     ports:
-      - ${POSTGRES_PORT}:5432
+      - ${DATABASE_PORT}:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
     

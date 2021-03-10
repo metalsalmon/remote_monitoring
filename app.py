@@ -7,16 +7,14 @@ from api.routes import api
 from models.base_model import initialize_db
 from handlers.listeners import KafkaConsumer
 from api.errors import register_error_handlers
+from settings import base_config
 
 def create_app():
     app = Flask(__name__, instance_relative_config=False)
 
-    CORS(app)
+    app.config.from_object(base_config.BaseConfig)
 
-    app.secret_key = os.urandom(24)
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DB_CONNECTION")
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    #app.config['FLASK_ENV'] = True
+    CORS(app)
 
     register_error_handlers(app)
 
@@ -24,8 +22,8 @@ def create_app():
     
     initialize_db(app)
 
-    omg = KafkaConsumer(app)
-    omg.register_listeners()
+    consumer = KafkaConsumer(app)
+    consumer.register_listeners()
 
     return app
 
