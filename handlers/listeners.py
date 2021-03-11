@@ -5,16 +5,38 @@ load_dotenv()
 import os
 from controllers import monitoring_controller
 from controllers import device_info_controller
+from models.base_model import db
+from models.device import Device
+import json
+from kafka.admin import KafkaAdminClient, NewTopic
 
-class KafkaConsumer(object):
+class KafkaClient(object):
 
     def __init__(self, app):
         self.app = app
 
 
     def register_listeners(self):
-        self.register_kafka_listener('monitoring', self.monitoring_listener)
+        self.register_kafka_listener('MONITORING', self.monitoring_listener)
         self.register_kafka_listener('DEVICE_INFO', self.device_info_listener)
+
+    def create_dynamic_topics(self):
+        print("WTFOMG")
+        devices = Device.query.all()
+
+        kafka_admin_client = KafkaAdminClient(
+            bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS')
+        )
+        
+        topics = []
+        try:
+            for device in devices:
+                topics.append(NewTopic(name=f"{device.mac}_MANAGEMENT".replace(':',""), num_partitions=1, replication_factor=1))
+
+            kafka_admin_client.create_topics(new_topics=topics, validate_only=False)
+
+        except Exception as e:
+            print("Unable to create topics or topic already exists -> check db")
 
     def register_kafka_listener(self, topic, listener):
 
@@ -40,4 +62,3 @@ class KafkaConsumer(object):
         
         device_info_controller.process_msg(self, data)
     
-

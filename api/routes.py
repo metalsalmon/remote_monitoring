@@ -38,9 +38,10 @@ def fileUpload():
     response="ok"
     data_send = {'fileDownload' : filename}
     producer = create_producer()
-    producer.send('config', json.dumps(data_send).encode('utf-8'))
+    producer.send('CONFIG', json.dumps(data_send).encode('utf-8'))
+    del producer
     return response
 
-@api.route('/monitoring', methods=['Get'])
+@api.route('/monitoring', methods=['GET'])
 def monitoring():
     return monitoring_controller.get_monitoring_data()

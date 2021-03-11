@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from api.routes import api
 from models.base_model import initialize_db
-from handlers.listeners import KafkaConsumer
+from handlers.listeners import KafkaClient
 from api.errors import register_error_handlers
 from settings import base_config
 
@@ -22,9 +22,8 @@ def create_app():
     
     initialize_db(app)
 
-    consumer = KafkaConsumer(app)
-    consumer.register_listeners()
+    kafka_client = KafkaClient(app)
+    kafka_client.register_listeners()
+    kafka_client.create_dynamic_topics()
 
     return app
-
-app = create_app()
