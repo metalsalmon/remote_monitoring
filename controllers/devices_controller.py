@@ -3,6 +3,7 @@ from models.package import Package
 from flask import json
 from models.base_model import db
 from handlers.create_kafka_topic import create_device_topic
+import app
 
 def process_msg(self, data):
     device_info = json.loads(data.value.decode("utf-8"))
@@ -19,3 +20,12 @@ def process_msg(self, data):
                     add_package = Package(name = package['package'], version = package['version'], owner = device_new)    
                     db.session.add(add_package)
                     db.session.commit()
+
+def get_devices():
+    devices = Device.query.all()
+    return json.dumps(
+        [item.summary() for item in devices]
+    )
+
+
+    #print(Device.query.all())

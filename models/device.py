@@ -17,5 +17,13 @@ class Device(BaseModel):
     monitors = db.relationship('Monitoring', backref='owner')
 
 
+    def summary(self) -> dict:
+        return dict(
+            name = self.name,
+            mac = self.mac,
+            distribution = self.distribution,
+            version = self.version
+        )
+
     def __repr__(self):
         return '<id %r>' % self.id
