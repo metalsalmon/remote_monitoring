@@ -7,7 +7,7 @@ import logging
 from werkzeug.utils import secure_filename
 import json
 from controllers import monitoring_controller, management_controller
-from controllers.devices_controller import get_devices
+from controllers.devices_controller import get_devices, get_device_packages
 
 
 api = Blueprint('api', __name__, url_prefix='/api')
@@ -61,5 +61,9 @@ def management():
 def devices():
     return get_devices()
 
+@api.route('/packages/<mac>')
+def packages(mac):
+    
+    return get_device_packages(mac)
 
 

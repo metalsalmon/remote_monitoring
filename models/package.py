@@ -12,5 +12,11 @@ class Package(BaseModel):
     name = db.Column(db.String(50))
     version = db.Column(db.String(50))
 
+    def summary(self) -> dict:
+        return dict(
+            name = self.name,
+            version = self.version,
+        )
+
     def __repr__(self):
         return '<id %r>' % self.id

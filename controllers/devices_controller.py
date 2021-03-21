@@ -27,5 +27,10 @@ def get_devices():
         [item.summary() for item in devices]
     )
 
-
-    #print(Device.query.all())
+def get_device_packages(mac):
+    device = Device.query.filter(Device.mac == mac).first()
+    device_packages = Package.query.filter(Package.device_id == device.id)
+    
+    return json.dumps(
+        [item.summary() for item in device_packages]
+    )
