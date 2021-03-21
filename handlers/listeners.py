@@ -21,7 +21,6 @@ class KafkaClient(object):
         self.register_kafka_listener('DEVICE_INFO', self.device_info_listener)
 
     def create_dynamic_topics(self):
-        print("WTFOMG")
         devices = Device.query.all()
 
         kafka_admin_client = KafkaAdminClient(

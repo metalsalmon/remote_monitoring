@@ -6,14 +6,10 @@ import os
 import logging
 from werkzeug.utils import secure_filename
 import json
-from controllers import monitoring_controller
+from controllers import monitoring_controller, management_controller
 
 
 api = Blueprint('api', __name__, url_prefix='/api')
-
-@api.route('/<name>')
-def index(name):
-    return{'key' : 'value'}
 
 @api.route('/uploads/<filename>', methods=['GET', 'POST'])
 def download(filename):
@@ -45,3 +41,19 @@ def fileUpload():
 @api.route('/monitoring', methods=['GET'])
 def monitoring():
     return monitoring_controller.get_monitoring_data()
+
+
+@api.route('/management', methods=['POST'])
+def management():
+    
+    data = json.loads(request.data.decode("utf-8"))['formInput']
+
+    if data['action'] == 'install':
+        management_controller.install_app(data['package'])
+    elif data['action'] == 'remove':
+        management_controller.uninstall_app(data['package'])
+
+    
+    return "ok"
+
+
