@@ -12,9 +12,10 @@ def get_monitoring_data():
 
     for devic in devicess:
         
-        monitoring_row = Monitoring.query.filter_by(device_id = devic.id).order_by(desc(Monitoring.id)).limit(1).first().summary(devic.name)
+        monitoring_row = Monitoring.query.filter_by(device_id = devic.id).order_by(desc(Monitoring.id)).limit(1).first()
         
         if monitoring_row is not None:
+            monitoring_row = monitoring_row.summary(devic.name)
             monitoring_response.append(monitoring_row)
         print(monitoring_response)
 
