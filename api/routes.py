@@ -48,12 +48,12 @@ def monitoring():
 def management():
     
     data = json.loads(request.data.decode("utf-8"))['formInput']
+    print(data)
 
     if data['action'] == 'install':
-        management_controller.install_app(data['package'])
+        management_controller.install_app(data['mac'], data['package'])
     elif data['action'] == 'remove':
-        management_controller.uninstall_app(data['package'])
-
+        management_controller.uninstall_app(data['mac'], data['package'])
     
     return "ok"
 

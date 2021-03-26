@@ -23,7 +23,6 @@ def get_monitoring_data():
 
 def process_msg(self, data):
     data = json.loads(data.value.decode("utf-8"))
-    print(data)
     with self.app.app_context():   
         monitoring_new = Monitoring(time=data["time"], cpu_usage=data["cpu_usage"], ram_usage=data["ram_usage"], disk_space=data["disk_space"], used_disk_space=data["used_disk_space"], owner = Device.query.filter(Device.mac == data["mac"]).first())
         db.session.add(monitoring_new)

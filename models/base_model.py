@@ -9,9 +9,7 @@ db = SQLAlchemy()
 def initialize_db(app):
     app.app_context().push()
     db.init_app(app)
-    #with app.app_context():
-    #    db.init_app(app)
-    #migrate = Migrate(app, db, compare_type=True)
+    migrate = Migrate(app, db, compare_type=True)
     #db.create_all()
 
 

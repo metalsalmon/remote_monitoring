@@ -15,6 +15,7 @@ class Device(BaseModel):
 
     packages = db.relationship('Package', backref='owner')
     monitors = db.relationship('Monitoring', backref='owner')
+    devices = db.relationship('Task', backref='owner')
 
 
     def summary(self) -> dict:

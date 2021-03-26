@@ -63,5 +63,5 @@ class KafkaClient(object):
         devices_controller.process_msg(self, data)
 
     def request_result_listener(self, data):
-        devices_controller.process_request_result(self, data)
+        devices_controller.process_request_result(self, json.loads(data.value.decode("utf-8")))
     

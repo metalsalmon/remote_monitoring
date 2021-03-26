@@ -1,5 +1,6 @@
 from models.device import Device
 from models.package import Package
+from models.task import Task
 from flask import json
 from models.base_model import db
 from handlers.create_kafka_topic import create_device_topic
@@ -40,4 +41,12 @@ def get_device_packages(mac):
     )
 
 def process_request_result(self, data):
-    print(data)
+    with self.app.app_context():
+        device = Device.query.filter(Device.mac == data['mac']).first()
+        device_task = Task.query.filter(Task.device_id == device.id, Task.done == False, Task.sequence_number == data['sequence_number']).first()
+        if device_task is not None:
+            device_task.result = data['result']
+            device_task.message = data['message']
+            device_task.done = True
+            db.session.commit()
+
