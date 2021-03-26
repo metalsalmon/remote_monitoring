@@ -19,6 +19,7 @@ class KafkaClient(object):
     def register_listeners(self):
         self.register_kafka_listener('MONITORING', self.monitoring_listener)
         self.register_kafka_listener('DEVICE_INFO', self.device_info_listener)
+        self.register_kafka_listener('REQUEST_RESULT', self.request_result_listener)
 
     def create_dynamic_topics(self):
         devices = Device.query.all()
@@ -59,5 +60,8 @@ class KafkaClient(object):
 
     def device_info_listener(self, data):
         
-        device_info_controller.process_msg(self, data)
+        devices_controller.process_msg(self, data)
+
+    def request_result_listener(self, data):
+        devices_controller.process_request_result(self, data)
     

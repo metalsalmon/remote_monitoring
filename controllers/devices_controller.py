@@ -38,3 +38,6 @@ def get_device_packages(mac):
     return json.dumps(
         [item.summary() for item in device_packages]
     )
+
+def process_request_result(self, data):
+    print(data)

@@ -14,7 +14,7 @@ def install_app(app):
     }
 
     producer = create_producer()
-    producer.send('b827ebaf96a1_MANAGEMENT', json.dumps(message).encode('utf-8'))
+    producer.send('dca6324e542b_MANAGEMENT', json.dumps(message).encode('utf-8'))
     del producer
 
 def uninstall_app(app):
