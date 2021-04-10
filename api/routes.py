@@ -8,13 +8,14 @@ from werkzeug.utils import secure_filename
 import json
 from controllers import monitoring_controller, management_controller
 from controllers.devices_controller import get_device, get_devices, get_device_packages
+from ws.events import socketio
+
 
 
 api = Blueprint('api', __name__, url_prefix='/api')
 
 @api.route('/uploads/<filename>', methods=['GET', 'POST'])
 def download(filename):
-    print("omg")
     print(os.getenv("UPLOAD_FOLDER"))
     print(filename)
     return send_from_directory(os.getenv("UPLOAD_FOLDER"), filename)

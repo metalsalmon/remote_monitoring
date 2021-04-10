@@ -8,6 +8,7 @@ from models.base_model import initialize_db
 from handlers.listeners import KafkaClient
 from api.errors import register_error_handlers
 from settings import base_config
+from ws.events import socketio
 
 def create_app():
     app = Flask(__name__, instance_relative_config=False)
@@ -25,5 +26,7 @@ def create_app():
     kafka_client = KafkaClient(app)
     kafka_client.register_listeners()
     kafka_client.create_dynamic_topics()
+
+    socketio.init_app(app)
 
     return app
