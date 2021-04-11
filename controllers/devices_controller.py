@@ -5,6 +5,7 @@ from flask import json
 from models.base_model import db
 from handlers.create_kafka_topic import create_device_topic
 import app
+from ws.events import socketio
 
 def process_msg(self, data):
     device_info = json.loads(data.value.decode("utf-8"))
@@ -44,9 +45,18 @@ def process_request_result(self, data):
     with self.app.app_context():
         device = Device.query.filter(Device.mac == data['mac']).first()
         device_task = Task.query.filter(Task.device_id == device.id, Task.done == False, Task.sequence_number == data['sequence_number']).first()
-        if device_task is not None:
+        if device_task is not None: 
             device_task.result = data['result']
-            device_task.message = data['message']
-            device_task.done = True
+
+            if data['result_code'] == 1000:
+                device_task.message = 'already installed'
+                socketio.emit('notifications', device_task.app + ': already installed')
+            else:         
+                device_task.message = data['message']
+                device_task.done = True
+                if device_task.action == 'install':
+                    socketio.emit('notifications', device_task.app + ': successfully installed' if data['result'] == 'success' else ': error')
+                elif device_task.action == 'remove':
+                    socketio.emit('notifications', device_task.app + ': successfully removed' if data['result'] == 'success' else ': error')
             db.session.commit()
 
