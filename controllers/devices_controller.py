@@ -29,6 +29,12 @@ def get_devices():
         [item.summary() for item in devices]
     )
 
+def get_tasks():
+    tasks = Task.query.all()
+    return json.dumps(
+        [item.summary() for item in tasks]
+    )
+
 def get_device(mac):
     device = Device.query.filter(Device.mac == mac).first()
     return device.summary()
@@ -51,6 +57,7 @@ def process_request_result(self, data):
             if data['result_code'] == 1000:
                 device_task.message = 'already installed'
                 socketio.emit('notifications', device_task.app + ': already installed')
+                device_task.done = True
             else:         
                 device_task.message = data['message']
                 device_task.done = True

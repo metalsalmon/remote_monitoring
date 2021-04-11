@@ -22,7 +22,9 @@ class Task(BaseModel):
             app = self.app,
             action = self.action,
             result = self.result,
-            message = self.message
+            message = self.message,
+            done = self.done,
+            created_at = self.created_at
         )
 
     def __repr__(self):

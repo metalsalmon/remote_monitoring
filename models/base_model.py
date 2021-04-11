@@ -16,6 +16,9 @@ def initialize_db(app):
 class BaseModel(db.Model):
     __abstract__ = True
 
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
+
     def get(self, **kwargs):
         try:
             return self.query().filter_by(**kwargs).first()
@@ -70,3 +73,5 @@ class BaseModel(db.Model):
 
     def save(self):
         db.session.commit()
+
+    

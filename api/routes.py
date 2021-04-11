@@ -7,7 +7,7 @@ import logging
 from werkzeug.utils import secure_filename
 import json
 from controllers import monitoring_controller, management_controller
-from controllers.devices_controller import get_device, get_devices, get_device_packages
+from controllers.devices_controller import get_device, get_devices, get_device_packages, get_tasks
 from ws.events import socketio
 
 
@@ -58,6 +58,10 @@ def management():
 @api.route('/devices', methods=['GET'])
 def devices():
     return get_devices()
+
+@api.route('/tasks', methods=['GET'])
+def tasks():
+    return get_tasks()
 
 @api.route('/device/<mac>', methods=['GET'])
 def device(mac):
