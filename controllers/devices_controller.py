@@ -58,7 +58,7 @@ def process_request_result(self, data):
                 device_task.message = 'already installed'
                 socketio.emit('notifications', device_task.app + ': already installed')
                 device_task.done = True
-            else:         
+            else:        
                 device_task.message = data['message']
                 device_task.done = True
                 if device_task.action == 'install':

@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 import json
 from controllers import monitoring_controller, management_controller
 from controllers.devices_controller import get_device, get_devices, get_device_packages, get_tasks
+from controllers.file_upload import file_upload
 from ws.events import socketio
 
 
@@ -22,23 +23,7 @@ def download(filename):
 
 @api.route('/upload', methods=['POST'])
 def fileUpload():
-    target=os.getenv("UPLOAD_FOLDER")
-    if not os.path.isdir(target):
-        os.mkdir(target)
-    
-    logger = logging.getLogger('Upload file')
-    logger.info("Upload file`")
-    file = request.files['file'] 
-    filename = secure_filename(file.filename)
-    destination="/".join([target, filename])
-    file.save(destination)
-    print(destination)
-    response="ok"
-    data_send = {'fileDownload' : filename}
-    producer = create_producer()
-    producer.send('CONFIG', json.dumps(data_send).encode('utf-8'))
-    del producer
-    return response
+    return file_upload(request.files['file'] , request.form['type'], request.form['path'])
 
 @api.route('/monitoring', methods=['GET'])
 def monitoring():
@@ -48,7 +33,7 @@ def monitoring():
 @api.route('/management', methods=['POST'])
 def management():
     
-    data = json.loads(request.data.decode("utf-8"))['formInput']
+    data = json.loads(request.data.decode("utf-8"))
     print(data)
 
     management_controller.manage_app(data['action'], data['mac'], data['package'])
