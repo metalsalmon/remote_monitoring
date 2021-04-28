@@ -11,6 +11,8 @@ flask-migrate = "*"
 psycopg2-binary = "*"
 flask-cors = "*"
 python-dotenv = "*"
+paramiko = "*"
+scp = "*"
 
 [dev-packages]
 

@@ -7,11 +7,9 @@ import logging
 from werkzeug.utils import secure_filename
 import json
 from controllers import monitoring_controller, management_controller
-from controllers.devices_controller import get_device, get_devices, get_device_packages, get_tasks
+from controllers.devices_controller import get_device, get_devices, get_device_packages, get_tasks, download_agent
 from controllers.file_upload import file_upload
 from ws.events import socketio
-
-
 
 api = Blueprint('api', __name__, url_prefix='/api')
 
@@ -57,4 +55,8 @@ def packages(mac):
     
     return get_device_packages(mac)
 
-
+@api.route('/downloadAgent', methods=['GET', 'POST'])
+def uploadAgent():
+    data = json.loads(request.data.decode("utf-8"))
+    download_agent(data['ip'], data['username'], data['sshPass'], data['sudoPass'], data['os'])
+    return 'ok'

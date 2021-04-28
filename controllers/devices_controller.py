@@ -6,6 +6,12 @@ from models.base_model import db
 from handlers.create_kafka_topic import create_device_topic
 import app
 from ws.events import socketio
+import subprocess
+import paramiko
+from paramiko import SSHClient
+from scp import SCPClient
+import os
+
 
 def process_msg(self, data):
     device_info = json.loads(data.value.decode("utf-8"))
@@ -18,7 +24,7 @@ def process_msg(self, data):
 
             for package in device_info['packages']:
                 if Package.query.filter_by(name = package["package"], version = package['version'], owner = device_new).first() is None:
-                    print(package)    
+                    #print(package)    
                     add_package = Package(name = package['package'], version = package['version'], owner = device_new)    
                     db.session.add(add_package)
                     db.session.commit()
@@ -47,10 +53,29 @@ def get_device_packages(mac):
         [item.summary() for item in device_packages]
     )
 
+def download_agent(ip, username, ssh_password, sudo_password, agent_os):
+    try:
+        code = subprocess.run(['sudo', 'sshpass' , '-p' , sudo_password , 'scp', os.getenv('AGENT_LOCATION'), username + '@' + ip + ':' + os.getenv('REMOTE_AGENT_LOCATION') + os.getenv("AGENT_NAME")])
+
+        if code.returncode == 0:
+            agent_location = os.getenv('REMOTE_AGENT_LOCATION') + os.getenv("AGENT_NAME")
+            command = "sudo -S -p '' %s" % agent_location
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(ip, username=username, password=ssh_password)
+            stdin, stdout, stderr = ssh.exec_command(command=command)
+            stdin.write(sudo_password + "\n")
+            stdin.flush()
+
+    except Exception as e:
+        print(e)
+
+
+
 def process_request_result(self, data):
     with self.app.app_context():
         device = Device.query.filter(Device.mac == data['mac']).first()
-        device_task = Task.query.filter(Task.device_id == device.id, Task.done == False, Task.sequence_number == data['sequence_number']).first()
+        device_task = Task.query.filter(Task.device_id == device.id, Task.done == False, Task.id == data['sequence_number']).first()
         if device_task is not None: 
             device_task.result = data['result']
 
@@ -62,8 +87,8 @@ def process_request_result(self, data):
                 device_task.message = data['message']
                 device_task.done = True
                 if device_task.action == 'install':
-                    socketio.emit('notifications', device_task.app + ': successfully installed' if data['result'] == 'success' else ': error')
+                    socketio.emit('notifications', device_task.app + ': successfully installed' if data['result'] == 'success' else ': error ' + str(data['result_code']))
                 elif device_task.action == 'remove':
-                    socketio.emit('notifications', device_task.app + ': successfully removed' if data['result'] == 'success' else ': error')
+                    socketio.emit('notifications', device_task.app + ': successfully removed' if data['result'] == 'success' else ': error ' + str(data['result_code']))
             db.session.commit()
 
