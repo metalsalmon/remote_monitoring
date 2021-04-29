@@ -12,21 +12,21 @@ from ws.events import socketio
 
 def create_app():
     app = Flask(__name__, instance_relative_config=False)
-
     app.config.from_object(base_config.BaseConfig)
-
-    CORS(app)
-
-    register_error_handlers(app)
-
-    app.register_blueprint(api)
     
-    initialize_db(app)
+    if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        CORS(app)
 
-    kafka_client = KafkaClient(app)
-    kafka_client.register_listeners()
-    kafka_client.create_dynamic_topics()
+        register_error_handlers(app)
 
-    socketio.init_app(app)
+        app.register_blueprint(api)
+        
+        initialize_db(app)
+
+        kafka_client = KafkaClient(app)
+        kafka_client.register_listeners()
+        kafka_client.create_dynamic_topics()
+
+        socketio.init_app(app)
 
     return app
