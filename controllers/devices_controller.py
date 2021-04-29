@@ -16,18 +16,30 @@ import os
 def process_msg(self, data):
     device_info = json.loads(data.value.decode("utf-8"))
     with self.app.app_context(): 
-        if Device.query.filter_by(mac = device_info["mac"]).first() is None:
+        device = Device.query.filter_by(mac = device_info["mac"]).first()
+        if device is None:
             device_new = Device(name=device_info["name"], mac=device_info["mac"], distribution=device_info["distribution"], version=device_info["version"])
             db.session.add(device_new)
             db.session.commit()
             create_device_topic(device_info["mac"])
 
             for package in device_info['packages']:
-                if Package.query.filter_by(name = package["package"], version = package['version'], owner = device_new).first() is None:
+                if Package.query.filter_by(name = package["package"], owner = device_new).first() is None:
                     #print(package)    
                     add_package = Package(name = package['package'], version = package['version'], owner = device_new)    
                     db.session.add(add_package)
                     db.session.commit()
+        else:
+            for package in device_info['packages']:
+                db_package = Package.query.filter_by(name = package["package"], owner = device).first()
+                if db_package is None:
+                    add_package = Package(name = package['package'], version = package['version'], owner = device)    
+                    db.session.add(add_package)
+                    db.session.commit()
+                else:
+                    db_package.version = package['version']
+                    db.session.commit()
+
 
 def get_devices():
     devices = Device.query.all()
@@ -77,7 +89,7 @@ def process_request_result(self, data):
         device = Device.query.filter(Device.mac == data['mac']).first()
         device_task = Task.query.filter(Task.device_id == device.id, Task.done == False, Task.id == data['sequence_number']).first()
         if device_task is not None: 
-            device_task.result = data['result']
+            device_task.result =  'sucess' if data['result_code'] == 0  else 'error'
 
             if data['result_code'] == 1000:
                 device_task.message = 'already installed'
@@ -87,8 +99,14 @@ def process_request_result(self, data):
                 device_task.message = data['message']
                 device_task.done = True
                 if device_task.action == 'install':
-                    socketio.emit('notifications', device_task.app + ': successfully installed' if data['result'] == 'success' else ': error ' + str(data['result_code']))
+                    if data['result_code'] == 0:
+                        add_package = Package(name = device_task.app, version = data['version'], owner = device)
+                        db.session.add(add_package)
+                        db.session.commit()  
+                    socketio.emit('notifications', device_task.app + ': successfully installed' if data['result_code'] == 0 else ': error ' + str(data['result_code']))
                 elif device_task.action == 'remove':
-                    socketio.emit('notifications', device_task.app + ': successfully removed' if data['result'] == 'success' else ': error ' + str(data['result_code']))
+                    if data['result_code'] == 0:
+                        Package.query.filter(Package.name == device_task.app).delete()
+                    socketio.emit('notifications', device_task.app + ': successfully removed' if data['result_code'] == 0 else ': error ' + str(data['result_code']))
             db.session.commit()
 

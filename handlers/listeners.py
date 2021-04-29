@@ -43,7 +43,7 @@ class KafkaClient(object):
         consumer = kafka_consumer(topic, bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS'))
         
         def poll():
-            consumer.poll(timeout_ms=5000)
+            consumer.poll(timeout_ms=int(os.getenv('KAFKA_POOL_TIMEOUT')))
             for msg in consumer:
                 listener(msg)
                 
