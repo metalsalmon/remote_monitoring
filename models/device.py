@@ -9,6 +9,7 @@ class Device(BaseModel):
     id = db.Column(db.Integer, primary_key = True)
 
     name = db.Column(db.String(50))
+    ip = db.Column(db.String(20))
     mac = db.Column(db.String(25))
     distribution = db.Column(db.String(30))
     version = db.Column(db.String(20))
@@ -21,6 +22,7 @@ class Device(BaseModel):
     def summary(self) -> dict:
         return dict(
             name = self.name,
+            ip = self.ip,
             mac = self.mac,
             distribution = self.distribution,
             version = self.version

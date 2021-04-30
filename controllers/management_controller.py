@@ -4,7 +4,7 @@ from handlers.producer import create_producer
 from models.task import Task
 from models.device import Device
 
-def manage_app(action, mac, app):
+def manage_app(action, mac, app, version):
     
     task_new = Task(app=app, sequence_number=0, action=action, done=False, owner = Device.query.filter(Device.mac == mac).first())
     db.session.add(task_new)
@@ -14,7 +14,7 @@ def manage_app(action, mac, app):
         'action' : action,
         'app' : app,
         'sequence_number' : task_new.id,
-        'version' : 'latest',
+        'version' : 'latest' if version == '' else version,
     }
 
 

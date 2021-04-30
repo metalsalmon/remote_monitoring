@@ -34,7 +34,7 @@ def management():
     data = json.loads(request.data.decode("utf-8"))
     print(data)
 
-    management_controller.manage_app(data['action'], data['mac'], data['package'])
+    management_controller.manage_app(data['action'], data['mac'], data['package'], data['version'])
     
     return "ok"
 
