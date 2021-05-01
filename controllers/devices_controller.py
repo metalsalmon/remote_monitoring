@@ -89,32 +89,43 @@ def process_request_result(self, data):
         device = Device.query.filter(Device.mac == data['mac']).first()
         device_task = Task.query.filter(Task.device_id == device.id, Task.done == False, Task.id == data['sequence_number']).first()
         if device_task is not None: 
-            device_task.result =  'sucess' if data['result_code'] == 0  else 'error'
+            device_task.result =  'sucess' if data['result_code'] == 0 or data['result_code'] == 1000  else 'error'
+            device_task.message = data['message']
+            device_task.done = True
 
-            if data['result_code'] == 1000:
-                device_task.message = 'already installed'
-                socketio.emit('notifications', device_task.app + ': already installed')
-                device_task.done = True
-            else:        
-                device_task.message = data['message']
-                device_task.done = True
-                if device_task.action == 'install':
-                    if data['result_code'] == 0:
-                        add_package = Package(name = device_task.app, version = data['version'], owner = device)
-                        db.session.add(add_package)
-                        db.session.commit()  
-                    socketio.emit('notifications', device_task.app + ': successfully installed' if data['result_code'] == 0 else ': error ' + str(data['result_code']))
-                elif device_task.action == 'remove':
-                    if data['result_code'] == 0:
-                        Package.query.filter(Package.name == device_task.app).delete()
-                    socketio.emit('notifications', device_task.app + ': successfully removed' if data['result_code'] == 0 else ': error ' + str(data['result_code']))
-                elif device_task.action == 'update':
-                    if data['result_code'] == 0:
-                        package = Package.query.filter(Package.name == device_task.app)
-                        if package is not None:
-                            package.version = data['version']
-                            db.session.commit()
-                            socketio.emit('notifications', device_task.app + ': successfully updated'+ data['version'] if data['result_code'] == 0 else ': error ' + str(data['result_code']))
+            if device_task.action == 'install':            
+                if data['result_code'] == 0:
+                    add_package = Package(name = device_task.app, version = data['version'], latest_version = data['latest_version'], owner = device)
+                    db.session.add(add_package)
+                    db.session.commit()  
+                    socketio.emit('notifications', device_task.app + ': successfully installed')
+                elif data['result_code'] == 1000:
+                    device_task.message = 'already installed'
+                    socketio.emit('notifications', device_task.app + ': already installed')
+                else:
+                    socketio.emit('notifications', device_task.app + ': unable to install')
+
+            elif device_task.action == 'remove':
+                if data['result_code'] == 0:
+                    Package.query.filter(Package.name == device_task.app).delete()
+                    socketio.emit('notifications', device_task.app + ': successfully removed')
+                elif data['result_code'] == 1000:
+                    device_task.message = 'is not installed'
+                    socketio.emit('notifications', device_task.app + ': is not installed')
+                else:
+                    socketio.emit('notifications', device_task.app + ': unable to remove')
+
+            elif device_task.action == 'update':
+                if data['result_code'] == 0:
+                    package = Package.query.filter(Package.name == device_task.app)
+                    if package is not None:
+                        package.version = data['version']
+                        package.latest_version = data['latest_version']
+                        db.session.commit()
+                        socketio.emit('notifications', device_task.app + ': successfully updated'+ data['version'] if data['result_code'] == 0 else ': error ' + str(data['result_code']))
+                elif data['result_code'] == 1000:
+                    device_task.message = 'is not installed'
+                    socketio.emit('notifications', device_task.app + ': is not installed')        
 
             db.session.commit()
 
