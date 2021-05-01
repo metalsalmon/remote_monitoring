@@ -6,7 +6,7 @@ from models.device import Device
 
 def manage_app(action, mac, app, version):
     
-    task_new = Task(app=app, sequence_number=0, action=action, done=False, owner = Device.query.filter(Device.mac == mac).first())
+    task_new = Task(app=app, action=action, done=False, owner = Device.query.filter(Device.mac == mac).first())
     db.session.add(task_new)
     db.session.commit()
 

@@ -12,7 +12,7 @@ class Device(BaseModel):
     ip = db.Column(db.String(20))
     mac = db.Column(db.String(25))
     distribution = db.Column(db.String(30))
-    version = db.Column(db.String(20))
+    version = db.Column(db.String(25))
 
     packages = db.relationship('Package', backref='owner')
     monitors = db.relationship('Monitoring', backref='owner')

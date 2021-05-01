@@ -33,8 +33,11 @@ def management():
     
     data = json.loads(request.data.decode("utf-8"))
     print(data)
+    action = data['action']
+    version = data['version'] if action != 'remove' else ''
 
-    management_controller.manage_app(data['action'], data['mac'], data['package'], data['version'])
+
+    management_controller.manage_app(action, data['mac'], data['package'], version)
     
     return "ok"
 

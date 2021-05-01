@@ -26,18 +26,20 @@ def process_msg(self, data):
             for package in device_info['packages']:
                 if Package.query.filter_by(name = package['package'], owner = device_new).first() is None:
                     #print(package)    
-                    add_package = Package(name = package['package'], version = package['version'], owner = device_new)    
+                    add_package = Package(name = package['package'], version = package['version'], latest_version = package['latest_version'], owner = device_new)    
                     db.session.add(add_package)
                     db.session.commit()
         else:
             for package in device_info['packages']:
+                print(package)
                 db_package = Package.query.filter_by(name = package['package'], owner = device).first()
                 if db_package is None:
-                    add_package = Package(name = package['package'], version = package['version'], owner = device)    
+                    add_package = Package(name = package['package'], version = package['version'], latest_version = package['latest_version'], owner = device)    
                     db.session.add(add_package)
                     db.session.commit()
                 else:
                     db_package.version = package['version']
+                    db_package.latest_version = package['latest_version']
                     db.session.commit()
 
 
@@ -82,8 +84,6 @@ def download_agent(ip, username, ssh_password, sudo_password, agent_os):
     except Exception as e:
         print(e)
 
-
-
 def process_request_result(self, data):
     with self.app.app_context():
         device = Device.query.filter(Device.mac == data['mac']).first()
@@ -114,7 +114,7 @@ def process_request_result(self, data):
                         if package is not None:
                             package.version = data['version']
                             db.session.commit()
-                            socketio.emit('notifications', device_task.app + ': successfully updated' if data['result_code'] == 0 else ': error ' + str(data['result_code']))
+                            socketio.emit('notifications', device_task.app + ': successfully updated'+ data['version'] if data['result_code'] == 0 else ': error ' + str(data['result_code']))
 
             db.session.commit()
 
