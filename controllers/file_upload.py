@@ -16,7 +16,7 @@ def file_upload(file, type, path):
     destination="/".join([target, filename])
     file.save(destination)
     print(destination)
-    data_send = {'fileDownload' : filename, 'path' : path}
+    data_send = {'fileDownload' : filename, 'location' : os.getenv('SERVER_IP')+'/api/uploads/', 'path' : path}
     producer = create_producer()
     producer.send('CONFIG', json.dumps(data_send).encode('utf-8'))
     del producer

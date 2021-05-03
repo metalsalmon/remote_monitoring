@@ -27,6 +27,10 @@ def fileUpload():
 def monitoring():
     return monitoring_controller.get_monitoring_data()
 
+@api.route('/monitoring2', methods=['GET'])
+def monitoring2():
+    return monitoring_controller.get_graph_monitoring_data()
+
 
 @api.route('/management', methods=['POST'])
 def management():

@@ -13,7 +13,18 @@ from scp import SCPClient
 import os
 
 
-def process_msg(self, data):
+def all_devices_info(self, data):
+    device_info = json.loads(data.value.decode("utf-8"))
+    with self.app.app_context(): 
+        device = Device.query.filter_by(mac = device_info["mac"]).first()
+        if device is None:
+            device_new = Device(name=device_info['name'], ip=device_info['ip'], mac=device_info['mac'], distribution=device_info['distribution'], version=device_info['version'])
+            db.session.add(device_new)
+            db.session.commit()
+            create_device_topic(device_info['mac'])
+
+
+def device_info(self, data):
     device_info = json.loads(data.value.decode("utf-8"))
     with self.app.app_context(): 
         device = Device.query.filter_by(mac = device_info["mac"]).first()
@@ -41,6 +52,7 @@ def process_msg(self, data):
                     db_package.version = package['version']
                     db_package.latest_version = package['latest_version']
                     db.session.commit()
+
 
 
 def get_devices():
@@ -82,6 +94,7 @@ def download_agent(ip, username, ssh_password, sudo_password, agent_os):
             stdin.flush()
 
     except Exception as e:
+        print('error: ')
         print(e)
 
 def process_request_result(self, data):
@@ -117,11 +130,14 @@ def process_request_result(self, data):
 
             elif device_task.action == 'update':
                 if data['result_code'] == 0:
-                    package = Package.query.filter(Package.name == device_task.app)
+                    package = Package.query.filter(Package.name == device_task.app).first()
                     if package is not None:
+                        print('joooj')
+                        print(data['version'])
+                        print(data['latest_version'])
+                        print('joooj')
                         package.version = data['version']
                         package.latest_version = data['latest_version']
-                        db.session.commit()
                         socketio.emit('notifications', device_task.app + ': successfully updated'+ data['version'] if data['result_code'] == 0 else ': error ' + str(data['result_code']))
                 elif data['result_code'] == 1000:
                     device_task.message = 'is not installed'

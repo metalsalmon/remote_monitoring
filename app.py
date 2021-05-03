@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from api.routes import api
 from models.base_model import initialize_db
-from handlers.listeners import KafkaClient
+from handlers.kafka_client import initialize_kafka
 from api.errors import register_error_handlers
 from settings import base_config
 from ws.events import socketio
@@ -23,9 +23,7 @@ def create_app():
         
         initialize_db(app)
 
-        kafka_client = KafkaClient(app)
-        kafka_client.register_listeners()
-        kafka_client.create_dynamic_topics()
+        initialize_kafka(app)
 
         socketio.init_app(app)
 

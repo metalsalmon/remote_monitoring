@@ -10,15 +10,17 @@ from models.device import Device
 import json
 from kafka.admin import KafkaAdminClient, NewTopic
 
-class KafkaClient(object):
+class KafkaClient():
 
-    def __init__(self, app):
+    def initialize_app(self, app):
         self.app = app
 
+    def register_device_listener(self, mac):
+        self.register_kafka_listener(f"{mac}_DEVICE_INFO".replace(':',''), self.device_info_listener)
 
     def register_listeners(self):
         self.register_kafka_listener('MONITORING', self.monitoring_listener)
-        self.register_kafka_listener('DEVICE_INFO', self.device_info_listener)
+        self.register_kafka_listener('DEVICE_INFO', self.all_devices_info_listener)
         self.register_kafka_listener('REQUEST_RESULT', self.request_result_listener)
 
     def create_dynamic_topics(self):
@@ -31,7 +33,9 @@ class KafkaClient(object):
         topics = []
         try:
             for device in devices:
-                topics.append(NewTopic(name=f"{device.mac}_MANAGEMENT".replace(':',""), num_partitions=1, replication_factor=1))
+                topics.append(NewTopic(name=f"{device.mac}_MANAGEMENT".replace(':',''), num_partitions=1, replication_factor=1))
+                topics.append(NewTopic(name=f"{device.mac}_DEVICE_INFO".replace(':',''), num_partitions=1, replication_factor=1))
+                self.register_kafka_listener(f"{device.mac}_DEVICE_INFO".replace(':',''), self.device_info_listener)
 
             kafka_admin_client.create_topics(new_topics=topics, validate_only=False)
 
@@ -58,9 +62,13 @@ class KafkaClient(object):
         except:
             print("Non registred device") 
 
+    def all_devices_info_listener(self, data):
+        
+        devices_controller.all_devices_info(self, data)
+
     def device_info_listener(self, data):
         
-        devices_controller.process_msg(self, data)
+        devices_controller.device_info(self, data)
 
     def request_result_listener(self, data):
         devices_controller.process_request_result(self, json.loads(data.value.decode("utf-8")))
