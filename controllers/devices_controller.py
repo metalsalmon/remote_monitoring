@@ -62,6 +62,12 @@ def get_devices():
         [item.summary() for item in devices]
     )
 
+def get_groups():
+    groups = Group.query.all()
+    return json.dumps(
+        [item.summary() for item in groups]
+    )
+
 def get_tasks():
     tasks = Task.query.all()
     return json.dumps(
@@ -146,8 +152,17 @@ def process_request_result(self, data):
 
             db.session.commit()
 
-def create_group(name):
-    group = Group(name=name)
-    db.session.add(group)
+def add_group(group_name):
+        group = Group(name=group_name)
+        db.session.add(group)
+        db.session.commit()
+
+def update_group(group_name, old_group_name):
+    group = Group.query.filter(Group.name == old_group_name).first()
+    group.name = group_name
+    db.session.commit()
+    
+def delete_group(group_name):
+    Group.query.filter(Group.name == group_name).delete()
     db.session.commit()
 
