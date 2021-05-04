@@ -67,3 +67,10 @@ def uploadAgent():
     data = json.loads(request.data.decode("utf-8"))
     download_agent(data['ip'], data['username'], data['sshPass'], data['sudoPass'], data['os'])
     return 'ok'
+
+@api.route('/createGroup', methods=['POST'])
+def createGroup():
+    data = json.loads(request.data.decode("utf-8"))
+    print(data)
+    name = data['name']
+    return file_upload(request.files['file'] , request.form['type'], request.form['path'])

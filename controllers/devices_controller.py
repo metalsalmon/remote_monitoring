@@ -1,6 +1,7 @@
 from models.device import Device
 from models.package import Package
 from models.task import Task
+from models.group import Group
 from flask import json
 from models.base_model import db
 from handlers.create_kafka_topic import create_device_topic
@@ -144,4 +145,9 @@ def process_request_result(self, data):
                     socketio.emit('notifications', device_task.app + ': is not installed')        
 
             db.session.commit()
+
+def create_group(name):
+    group = Group(name=name)
+    db.session.add(group)
+    db.session.commit()
 

@@ -23,6 +23,10 @@ class KafkaClient():
         self.register_kafka_listener('DEVICE_INFO', self.all_devices_info_listener)
         self.register_kafka_listener('REQUEST_RESULT', self.request_result_listener)
 
+        devices = Device.query.all()
+        for device in devices:
+            self.register_kafka_listener(f"{device.mac}_DEVICE_INFO".replace(':',''), self.device_info_listener)
+
     def create_dynamic_topics(self):
         devices = Device.query.all()
 
@@ -35,7 +39,6 @@ class KafkaClient():
             for device in devices:
                 topics.append(NewTopic(name=f"{device.mac}_MANAGEMENT".replace(':',''), num_partitions=1, replication_factor=1))
                 topics.append(NewTopic(name=f"{device.mac}_DEVICE_INFO".replace(':',''), num_partitions=1, replication_factor=1))
-                self.register_kafka_listener(f"{device.mac}_DEVICE_INFO".replace(':',''), self.device_info_listener)
 
             kafka_admin_client.create_topics(new_topics=topics, validate_only=False)
 
