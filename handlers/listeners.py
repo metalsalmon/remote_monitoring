@@ -17,6 +17,7 @@ class KafkaClient():
 
     def register_device_listener(self, mac):
         self.register_kafka_listener(f"{mac}_DEVICE_INFO".replace(':',''), self.device_info_listener)
+        self.register_kafka_listener(f"{mac}_CONFIG".replace(':',''), self.device_info_listener)
 
     def register_listeners(self):
         self.register_kafka_listener('MONITORING', self.monitoring_listener)
@@ -39,6 +40,7 @@ class KafkaClient():
             for device in devices:
                 topics.append(NewTopic(name=f"{device.mac}_MANAGEMENT".replace(':',''), num_partitions=1, replication_factor=1))
                 topics.append(NewTopic(name=f"{device.mac}_DEVICE_INFO".replace(':',''), num_partitions=1, replication_factor=1))
+                topics.append(NewTopic(name=f"{device.mac}_CONFIG".replace(':',''), num_partitions=1, replication_factor=1))
 
             kafka_admin_client.create_topics(new_topics=topics, validate_only=False)
 
@@ -71,6 +73,9 @@ class KafkaClient():
 
     def device_info_listener(self, data):
         devices_controller.device_info(self, data)
+        
+    def device_config_listener(self, data):
+        devices_controller.device_config(self, data)
 
     def request_result_listener(self, data):
         devices_controller.process_request_result(self, json.loads(data.value.decode("utf-8")))

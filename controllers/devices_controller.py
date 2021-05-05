@@ -55,8 +55,6 @@ def device_info(self, data):
                     db_package.latest_version = package['latest_version']
                     db.session.commit()
 
-
-
 def get_devices():
     devices = Device.query.all()
     return json.dumps(

@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 import json
 from controllers import monitoring_controller, management_controller
 from controllers.devices_controller import get_device, get_devices, get_device_packages, get_tasks, download_agent, get_groups, add_group, add_to_group, update_group, delete_group, get_group_devices, get_group_packages
-from controllers.file_upload import file_upload
+from controllers.file_upload import file_upload, group_file_upload
 from ws.events import socketio
 
 
@@ -16,14 +16,17 @@ api = Blueprint('api', __name__, url_prefix='/api')
 
 @api.route('/uploads/<filename>', methods=['GET', 'POST'])
 def download(filename):
-    print(os.getenv("UPLOAD_FOLDER"))
-    print(filename)
     return send_from_directory(os.getenv("UPLOAD_FOLDER"), filename)
 
-@api.route('/upload', methods=['POST'])
-def fileUpload():
-    print(request.data)
-    return file_upload(request.files['file'] , request.form['type'], request.form['path'])
+@api.route('/upload/<mac>', methods=['POST'])
+def fileUpload(mac):
+    file_upload(request.files['file'] , request.form['type'], request.form['path'], mac)
+    return '', 200
+
+@api.route('/groupUpload/<group>', methods=['POST'])
+def groupUpload(group):
+    group_file_upload(request.files['file'] , request.form['type'], request.form['path'], group)
+    return '', 200
 
 @api.route('/monitoring', methods=['GET'])
 def monitoring():

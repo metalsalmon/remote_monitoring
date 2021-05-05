@@ -15,6 +15,7 @@ def create_device_topic(mac):
     try:
         topics.append(NewTopic(name=f"{mac}_MANAGEMENT".replace(':',""), num_partitions=1, replication_factor=1))
         topics.append(NewTopic(name=f"{mac}_DEVICE_INFO".replace(':',''), num_partitions=1, replication_factor=1))
+        topics.append(NewTopic(name=f"{mac}_CONFIG".replace(':',''), num_partitions=1, replication_factor=1))
         
 
         kafka_admin_client.create_topics(new_topics=topics, validate_only=False)
