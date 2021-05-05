@@ -7,9 +7,10 @@ import logging
 from werkzeug.utils import secure_filename
 import json
 from controllers import monitoring_controller, management_controller
-from controllers.devices_controller import get_device, get_devices, get_device_packages, get_tasks, download_agent, get_groups, add_group, update_group, delete_group
+from controllers.devices_controller import get_device, get_devices, get_device_packages, get_tasks, download_agent, get_groups, add_group, add_to_group, update_group, delete_group, get_group_devices, get_group_packages
 from controllers.file_upload import file_upload
 from ws.events import socketio
+
 
 api = Blueprint('api', __name__, url_prefix='/api')
 
@@ -21,6 +22,7 @@ def download(filename):
 
 @api.route('/upload', methods=['POST'])
 def fileUpload():
+    print(request.data)
     return file_upload(request.files['file'] , request.form['type'], request.form['path'])
 
 @api.route('/monitoring', methods=['GET'])
@@ -82,4 +84,27 @@ def packages(mac):
 def uploadAgent():
     data = json.loads(request.data.decode("utf-8"))
     download_agent(data['ip'], data['username'], data['sshPass'], data['sudoPass'], data['os'])
+    return '', 200
+
+@api.route('/addToGroup', methods=['POST'])
+def addToGroup():
+    print(request.data)
+    data = json.loads(request.data.decode("utf-8"))
+    add_to_group(data['mac'], data['name'])
+    return '', 200
+
+@api.route('/groupDevices/<group>', methods=['GET'])
+def groupDevices(group):
+    return get_group_devices(group)
+
+@api.route('/groupPackages/<group>', methods=['GET'])
+def groupPackages(group):
+    return get_group_packages(group)
+
+@api.route('/groupManagement', methods=['POST'])
+def groupManagement():
+    data = json.loads(request.data.decode("utf-8"))
+    action = data['action']
+    version = data['version'] if action != 'remove' else ''
+    management_controller.manage_group_app(action, data['group'], data['package'], version)
     return '', 200

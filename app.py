@@ -13,6 +13,7 @@ from ws.events import socketio
 def create_app():
     app = Flask(__name__, instance_relative_config=False)
     app.config.from_object(base_config.BaseConfig)
+    initialize_db(app)
     
     if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         CORS(app)
@@ -20,8 +21,6 @@ def create_app():
         register_error_handlers(app)
 
         app.register_blueprint(api)
-        
-        initialize_db(app)
 
         initialize_kafka(app)
 

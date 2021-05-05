@@ -70,7 +70,6 @@ class KafkaClient():
         devices_controller.all_devices_info(self, data)
 
     def device_info_listener(self, data):
-        
         devices_controller.device_info(self, data)
 
     def request_result_listener(self, data):

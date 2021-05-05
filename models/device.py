@@ -18,7 +18,7 @@ class Device(BaseModel):
     monitors = db.relationship('Monitoring', backref='owner')
     devices = db.relationship('Task', backref='owner')
 
-    group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete = 'CASCADE'), nullable=True)
+    group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete = 'SET NULL'), nullable=True)
 
 
     def summary(self) -> dict:

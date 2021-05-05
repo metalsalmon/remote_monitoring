@@ -23,6 +23,7 @@ def all_devices_info(self, data):
             db.session.add(device_new)
             db.session.commit()
             create_device_topic(device_info['mac'])
+            socketio.emit('notifications', 'new device added')
 
 
 def device_info(self, data):
@@ -157,6 +158,17 @@ def add_group(group_name):
         db.session.add(group)
         db.session.commit()
 
+def add_to_group(mac, group_name):
+    if group_name == '':
+        device = Device.query.filter(Device.mac == mac).first()
+        device.owner = None
+    else:
+        device = Device.query.filter(Device.mac == mac).first()
+        device.owner = Group.query.filter(Group.name == group_name).first()
+        db.session.commit()
+    
+    db.session.commit()
+
 def update_group(group_name, old_group_name):
     group = Group.query.filter(Group.name == old_group_name).first()
     group.name = group_name
@@ -165,4 +177,27 @@ def update_group(group_name, old_group_name):
 def delete_group(group_name):
     Group.query.filter(Group.name == group_name).delete()
     db.session.commit()
+
+def get_group_devices(group_name):
+    group = Group.query.filter(Group.name == group_name).first()
+    group_devices = Device.query.filter(Device.owner == group).all()
+
+    return json.dumps(
+        [item.summary() for item in group_devices]
+    )
+
+def get_group_packages(group_name):
+    group = Group.query.filter(Group.name == group_name).first()
+    group_devices = Device.query.filter(Device.owner == group).all()
+    packages = []
+    
+    for device in group_devices:
+        packages += Package.query.filter(Package.owner == device)
+
+    return json.dumps(
+        list({v['name']:v for v in [item.summary() for item in packages]}.values())
+    )
+
+
+
 
