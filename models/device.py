@@ -13,6 +13,7 @@ class Device(BaseModel):
     mac = db.Column(db.String(25))
     distribution = db.Column(db.String(30))
     version = db.Column(db.String(25))
+    connected = db.Column(db.Boolean)
 
     packages = db.relationship('Package', backref='owner')
     monitors = db.relationship('Monitoring', backref='owner')
@@ -27,7 +28,8 @@ class Device(BaseModel):
             ip = self.ip,
             mac = self.mac,
             distribution = self.distribution,
-            version = self.version
+            version = self.version,
+            connected = self.connected
         )
 
     def __repr__(self):

@@ -9,9 +9,12 @@ from models.base_model import db
 from models.device import Device
 import json
 from kafka.admin import KafkaAdminClient, NewTopic
+import time
+from models.device import Device
+from ws.events import socketio
 
 class KafkaClient():
-
+    timers = {}
     def initialize_app(self, app):
         self.app = app
 
@@ -23,6 +26,7 @@ class KafkaClient():
         self.register_kafka_listener('MONITORING', self.monitoring_listener)
         self.register_kafka_listener('DEVICE_INFO', self.all_devices_info_listener)
         self.register_kafka_listener('REQUEST_RESULT', self.request_result_listener)
+        self.connectivity_regitster()
 
         devices = Device.query.all()
         for device in devices:
@@ -38,9 +42,12 @@ class KafkaClient():
         topics = []
         try:
             for device in devices:
+                device.connected = False
+                db.session.commit()
                 topics.append(NewTopic(name=f"{device.mac}_MANAGEMENT".replace(':',''), num_partitions=1, replication_factor=1))
                 topics.append(NewTopic(name=f"{device.mac}_DEVICE_INFO".replace(':',''), num_partitions=1, replication_factor=1))
                 topics.append(NewTopic(name=f"{device.mac}_CONFIG".replace(':',''), num_partitions=1, replication_factor=1))
+                self.timers[device.mac] = time.monotonic()
 
             kafka_admin_client.create_topics(new_topics=topics, validate_only=False)
 
@@ -61,6 +68,25 @@ class KafkaClient():
         t_kafka.daemon = True
         t_kafka.start()
 
+    def connectivity_regitster(self):
+               
+        def connectivity():
+            while True:
+                for item, value in self.timers.items():
+                    if time.monotonic() - value > 5:
+                        with self.app.app_context():
+                            device = Device.query.filter_by(mac = item).first()
+                            if device.connected == True:
+                                device.connected = False
+                                db.session.commit()
+                                socketio.emit('notifications', device.ip + ' disconnected')          
+                time.sleep(2)
+    
+        t_connectivity = threading.Thread()
+        t_connectivity._target = connectivity
+        t_connectivity.daemon = True
+        t_connectivity.start()
+
     def monitoring_listener(self, data):
         try:
             monitoring_controller.process_msg(self, data)
@@ -72,6 +98,18 @@ class KafkaClient():
         devices_controller.all_devices_info(self, data)
 
     def device_info_listener(self, data):
+        print(self.timers)
+        device_info = json.loads(data.value.decode("utf-8"))
+        for item, value in self.timers.items():
+            if item ==  device_info["mac"]:
+                self.timers[item] = time.monotonic()
+                with self.app.app_context():
+                    device = Device.query.filter_by(mac = item).first()
+                    if device.connected == False:
+                        device.connected = True
+                        db.session.commit()
+                        socketio.emit('notifications', device.ip + ' connected')
+
         devices_controller.device_info(self, data)
         
     def device_config_listener(self, data):
