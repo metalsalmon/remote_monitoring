@@ -27,7 +27,20 @@ def file_upload(file, type, path, mac):
 def group_file_upload(file, file_type, path, group_name):
     print(group_name)
     group = Group.query.filter(Group.name == group_name).first()
+
+    target=os.getenv("UPLOAD_FOLDER")
+    if not os.path.isdir(target):
+        os.mkdir(target)
+
+    if path == '':
+        path = './'
+
+    filename = secure_filename(file.filename)
+    destination="/".join([target, filename])
+    file.save(destination)
     
     for device in Device.query.filter(Device.owner == group).all():
-        file_upload(file, file_type, path, device.mac)
-        time.sleep(5)
+        data_send = {'fileDownload' : filename, 'location' : os.getenv('SERVER_IP')+'/api/uploads/', 'path' : path}
+        producer = create_producer()
+        producer.send(device.mac.replace(':', '')+'CONFIG', json.dumps(data_send).encode('utf-8'))
+        del producer
