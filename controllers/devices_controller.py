@@ -108,6 +108,9 @@ def download_agent(ip, username, ssh_password, sudo_password, agent_os):
         print('error: ')
         print(e)
 
+def send_notification(ip, msg):
+    socketio.emit('notifications',ip + " -> " + msg)    
+
 def process_request_result(self, data):
     with self.app.app_context():
         device = Device.query.filter(Device.mac == data['mac']).first()
@@ -123,22 +126,22 @@ def process_request_result(self, data):
                     add_package = Package(name = device_task.app, version = data['version'], latest_version = data['latest_version'], owner = device)
                     db.session.add(add_package)
                     db.session.commit()  
-                    socketio.emit('notifications', device_task.app + ': successfully installed')
+                    send_notification(device.ip, device_task.app + ': successfully installed')
                 elif data['result_code'] == 1000:
                     device_task.message = 'already installed'
-                    socketio.emit('notifications', device_task.app + ': already installed')
+                    send_notification(device.ip, device_task.app + ': already installed')
                 else:
-                    socketio.emit('notifications', device_task.app + ': unable to install')
+                    send_notification(device.ip, device_task.app + ': unable to install')
 
             elif device_task.action == 'remove':
                 if data['result_code'] == 0:
                     Package.query.filter(Package.name == device_task.app).delete()
-                    socketio.emit('notifications', device_task.app + ': successfully removed')
+                    send_notification(device.ip, device_task.app + ': successfully removed')
                 elif data['result_code'] == 1000:
                     device_task.message = 'is not installed'
-                    socketio.emit('notifications', device_task.app + ': is not installed')
+                    send_notification(device.ip, device_task.app + ': is not installed')
                 else:
-                    socketio.emit('notifications', device_task.app + ': unable to remove')
+                    send_notification(device.ip, device_task.app + ': unable to remove')
 
             elif device_task.action == 'update':
                 if data['result_code'] == 0:
@@ -146,16 +149,15 @@ def process_request_result(self, data):
                     if package is not None:
                         package.version = data['version']
                         package.latest_version = data['latest_version']
-                        socketio.emit('notifications', device_task.app + ': successfully updated'+ data['version'] if data['result_code'] == 0 else ': error ' + str(data['result_code']))
+                        send_notification(device.ip, device_task.app + ': successfully updated'+ data['version'])
                 elif data['result_code'] == 1000:
                     device_task.message = 'is not installed'
-                    socketio.emit('notifications', device_task.app + ': is not installed')   
+                    send_notification(device.ip, device_task.app + ': is not installed')
             elif device_task.action == 'Update all':
                 if data['result_code'] == 0:
-                    socketio.emit('notifications', device.ip + ' successfull update')
+                    send_notification(device.ip, 'successfull update')
                 else:
-                    socketio.emit('notifications', device.ip + ' unsuccessfull update')
-
+                    send_notification(device.ip, 'unsuccessfull update')
 
             db.session.commit()
 
