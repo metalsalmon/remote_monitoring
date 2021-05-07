@@ -44,7 +44,7 @@ def device_info(self, data):
                         db.session.commit()
             else:
                 for package in device_info['packages']:
-                    print(package)
+                    #print(package)
                     db_package = Package.query.filter_by(name = package['package'], owner = device).first()
                     if db_package is None:
                         add_package = Package(name = package['package'], version = package['version'], latest_version = package['latest_version'], owner = device)    
@@ -68,7 +68,7 @@ def get_groups():
     )
 
 def get_tasks():
-    tasks = Task.query.all()
+    tasks = Task.query.order_by(Task.id).all()
     return json.dumps(
         [item.summary() for item in tasks]
     )
@@ -119,6 +119,7 @@ def process_request_result(self, data):
             device_task.result =  'sucess' if data['result_code'] == 0 or data['result_code'] == 1000  else 'error'
             device_task.message = data['message']
             device_task.done = True
+            device_task.state = 'finished'
             device_task.finished = db.func.now()
 
             if device_task.action == 'install':            
@@ -205,7 +206,3 @@ def get_group_packages(group_name):
     return json.dumps(
         list({v['name']:v for v in [item.summary() for item in packages]}.values())
     )
-
-
-
-

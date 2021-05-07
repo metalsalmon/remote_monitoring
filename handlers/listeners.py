@@ -3,7 +3,7 @@ import threading
 from dotenv import load_dotenv
 load_dotenv()
 import os
-from controllers import monitoring_controller
+from controllers import monitoring_controller, management_controller
 from controllers import devices_controller
 from models.base_model import db
 from models.device import Device

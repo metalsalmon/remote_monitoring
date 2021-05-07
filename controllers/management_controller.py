@@ -4,11 +4,11 @@ from handlers.producer import create_producer
 from models.task import Task
 from models.device import Device
 from models.group import Group
-
+import time
 
 def manage_app(action, mac, app, version):
     
-    task_new = Task(app=app, action=action, done=False, owner = Device.query.filter(Device.mac == mac).first())
+    task_new = Task(app=app, action=action, done=False, state='sent to the device' , owner = Device.query.filter(Device.mac == mac).first())
     db.session.add(task_new)
     db.session.commit()
 
@@ -19,6 +19,8 @@ def manage_app(action, mac, app, version):
         'version' : 'latest' if version == '' else version,
     }
 
+    task_new.task_message = message
+    db.session.commit()
 
     producer = create_producer()
     producer.send(mac.replace(':', '')+'_MANAGEMENT', json.dumps(message).encode('utf-8'))

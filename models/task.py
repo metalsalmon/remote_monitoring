@@ -15,6 +15,8 @@ class Task(BaseModel):
     message = db.Column(db.String(100))
     done = db.Column(db.Boolean)
     finished = db.Column(db.DateTime)
+    state = db.Column(db.String(20))
+    task_message = db.Column(JSON)
 
 
     def summary(self) -> dict:
@@ -23,9 +25,11 @@ class Task(BaseModel):
             action = self.action,
             result = self.result,
             message = self.message,
+            state = self.state,
             done = self.done,
             created_at = self.created_at,
             finished = self.finished
+            
         )
 
     def __repr__(self):
