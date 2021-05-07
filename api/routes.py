@@ -43,6 +43,9 @@ def management():
     data = json.loads(request.data.decode("utf-8"))
     print(data)
     action = data['action']
+    if action == 'updateAll':
+        management_controller.update_all(data['mac'])
+
     version = data['version'] if action != 'remove' else ''
 
 

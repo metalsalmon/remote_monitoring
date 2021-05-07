@@ -19,7 +19,7 @@ def all_devices_info(self, data):
     with self.app.app_context(): 
         device = Device.query.filter_by(mac = device_info["mac"]).first()
         if device is None:
-            device_new = Device(name=device_info['name'], ip=device_info['ip'], mac=device_info['mac'], distribution=device_info['distribution'], version=device_info['version'])
+            device_new = Device(name=device_info['name'], ip=device_info['ip'], mac=device_info['mac'], distribution=device_info['distribution'], version=device_info['version'], connected = True)
             db.session.add(device_new)
             db.session.commit()
             create_device_topic(device_info['mac'])
@@ -32,14 +32,13 @@ def device_info(self, data):
         with self.app.app_context(): 
             device = Device.query.filter_by(mac = device_info["mac"]).first()
             if device is None:
-                device_new = Device(name=device_info['name'], ip=device_info['ip'], mac=device_info['mac'], distribution=device_info['distribution'], version=device_info['version'])
+                device_new = Device(name=device_info['name'], ip=device_info['ip'], mac=device_info['mac'], distribution=device_info['distribution'], version=device_info['version'], connected = True)
                 db.session.add(device_new)
                 db.session.commit()
                 create_device_topic(device_info['mac'])
 
                 for package in device_info['packages']:
-                    if Package.query.filter_by(name = package['package'], owner = device_new).first() is None:
-                        #print(package)    
+                    if Package.query.filter_by(name = package['package'], owner = device_new).first() is None:  
                         add_package = Package(name = package['package'], version = package['version'], latest_version = package['latest_version'], owner = device_new)    
                         db.session.add(add_package)
                         db.session.commit()
@@ -88,6 +87,11 @@ def get_device_packages(mac):
 
 def download_agent(ip, username, ssh_password, sudo_password, agent_os):
     try:
+        print(ip)
+        print(username)
+        print(ssh_password)
+        print(sudo_password)
+        print(agent_os)
         code = subprocess.run(['sudo', 'sshpass' , '-p' , sudo_password , 'scp', os.getenv('AGENT_LOCATION'), username + '@' + ip + ':' + os.getenv('REMOTE_AGENT_LOCATION') + os.getenv("AGENT_NAME")])
 
         if code.returncode == 0:
@@ -139,16 +143,18 @@ def process_request_result(self, data):
                 if data['result_code'] == 0:
                     package = Package.query.filter(Package.name == device_task.app).first()
                     if package is not None:
-                        print('joooj')
-                        print(data['version'])
-                        print(data['latest_version'])
-                        print('joooj')
                         package.version = data['version']
                         package.latest_version = data['latest_version']
                         socketio.emit('notifications', device_task.app + ': successfully updated'+ data['version'] if data['result_code'] == 0 else ': error ' + str(data['result_code']))
                 elif data['result_code'] == 1000:
                     device_task.message = 'is not installed'
-                    socketio.emit('notifications', device_task.app + ': is not installed')        
+                    socketio.emit('notifications', device_task.app + ': is not installed')   
+            elif device_task.action == 'Update all':
+                if data['result_code'] == 0:
+                    socketio.emit('notifications', device.ip + ' successfull update')
+                else:
+                    socketio.emit('notifications', device.ip + ' unsuccessfull update')
+
 
             db.session.commit()
 
