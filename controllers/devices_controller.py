@@ -116,6 +116,7 @@ def process_request_result(self, data):
             device_task.result =  'sucess' if data['result_code'] == 0 or data['result_code'] == 1000  else 'error'
             device_task.message = data['message']
             device_task.done = True
+            device_task.finished = db.func.now()
 
             if device_task.action == 'install':            
                 if data['result_code'] == 0:
