@@ -1,5 +1,4 @@
 from flask import Blueprint, send_from_directory,request
-from handlers.producer import create_producer
 from dotenv import load_dotenv
 load_dotenv()
 import os

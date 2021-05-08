@@ -1,6 +1,6 @@
 from flask import json
 from models.base_model import db
-from handlers.producer import create_producer
+from handlers.producer import producer
 from models.task import Task
 from models.device import Device
 from models.group import Group
@@ -22,10 +22,7 @@ def manage_app(action, mac, app, version):
     task_new.task_message = message
     db.session.commit()
 
-    producer = create_producer()
-    producer.send(mac.replace(':', '')+'_MANAGEMENT', json.dumps(message).encode('utf-8'))
-    del producer
-
+    producer.send(mac.replace(':', '')+'_MANAGEMENT', message)
 
 def manage_group_app(action, group_name, package, version):
     group = Group.query.filter(Group.name == group_name).first()
@@ -44,7 +41,4 @@ def update_all(mac):
         'sequence_number' : task_new.id
     }
 
-
-    producer = create_producer()
-    producer.send(mac.replace(':', '')+'_MANAGEMENT', json.dumps(message).encode('utf-8'))
-    del producer
+    producer.send(mac.replace(':', '')+'_MANAGEMENT', message)

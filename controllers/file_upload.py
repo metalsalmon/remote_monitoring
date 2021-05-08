@@ -1,5 +1,5 @@
 import os
-from handlers.producer import create_producer   
+from handlers.producer import producer   
 from werkzeug.utils import secure_filename
 import json
 from models.group import Group
@@ -20,9 +20,7 @@ def file_upload(file, type, path, mac):
     file.save(destination)
     print(destination)
     data_send = {'fileDownload' : filename, 'location' : os.getenv('SERVER_IP')+'/api/uploads/', 'path' : path}
-    producer = create_producer()
-    producer.send(mac.replace(':', '')+'CONFIG', json.dumps(data_send).encode('utf-8'))
-    del producer
+    producer.send(mac.replace(':', '')+'CONFIG', data_send)
 
 def group_file_upload(file, file_type, path, group_name):
     print(group_name)
@@ -41,6 +39,4 @@ def group_file_upload(file, file_type, path, group_name):
     
     for device in Device.query.filter(Device.owner == group).all():
         data_send = {'fileDownload' : filename, 'location' : os.getenv('SERVER_IP')+'/api/uploads/', 'path' : path}
-        producer = create_producer()
-        producer.send(device.mac.replace(':', '')+'CONFIG', json.dumps(data_send).encode('utf-8'))
-        del producer
+        producer.send(device.mac.replace(':', '')+'CONFIG', data_send)
