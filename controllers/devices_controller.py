@@ -160,6 +160,14 @@ def process_request_result(self, data):
                     send_notification(device.ip, 'successfull update')
                 else:
                     send_notification(device.ip, 'unsuccessfull update')
+            elif device_task.action == 'file upload':
+                if data['result_code'] == 0:
+                    send_notification(device.ip, 'file successfully uploaded')
+                elif data['result_code'] == 1111:
+                    send_notification(device.ip, 'unable to execute the script')
+
+                else:
+                    send_notification(device.ip, 'unsuccessfull file upload')
 
             db.session.commit()
 
