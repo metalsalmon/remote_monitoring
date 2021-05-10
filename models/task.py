@@ -9,6 +9,7 @@ class Task(BaseModel):
     id = db.Column(db.Integer, primary_key = True)
     device_id = db.Column(db.Integer, db.ForeignKey('device.id', ondelete = 'CASCADE'), nullable=False)
 
+    ip = db.Column(db.String(30))
     app = db.Column(db.String(50))
     action = db.Column(db.String(25))
     result = db.Column(db.String(50))
@@ -21,6 +22,7 @@ class Task(BaseModel):
 
     def summary(self) -> dict:
         return dict(
+            ip = self.ip,
             app = self.app,
             action = self.action,
             result = self.result,
