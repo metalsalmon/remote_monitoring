@@ -20,7 +20,7 @@ def file_upload(file, type, path, mac):
     file.save(destination)
     print(destination)
     data_send = {'fileDownload' : filename, 'location' : os.getenv('SERVER_IP')+'/api/uploads/', 'path' : path}
-    producer.send(mac.replace(':', '')+'CONFIG', data_send)
+    producer.send(mac.replace(':', '')+'_CONFIG', data_send)
 
 def group_file_upload(file, file_type, path, group_name):
     print(group_name)
