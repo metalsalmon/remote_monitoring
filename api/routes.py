@@ -6,7 +6,7 @@ import logging
 from werkzeug.utils import secure_filename
 import json
 from controllers import monitoring_controller, management_controller
-from controllers.devices_controller import get_device, get_devices, get_device_packages, get_tasks, download_agent, get_groups, add_group, add_to_group, update_group, delete_group, get_group_devices, get_group_packages
+from controllers.devices_controller import get_device, get_devices, get_device_packages, get_tasks, download_agent, get_groups, add_group, remove_from_group, add_to_group, update_group, delete_group, get_group_devices, get_group_packages
 from controllers.file_upload import file_upload, group_file_upload
 from ws.events import socketio
 
@@ -96,6 +96,13 @@ def addToGroup():
     print(request.data)
     data = json.loads(request.data.decode("utf-8"))
     add_to_group(data['mac'], data['name'])
+    return '', 200
+
+@api.route('/removeFromGroup', methods=['POST'])
+def removeFromGroup():
+    print(request.data)
+    data = json.loads(request.data.decode("utf-8"))
+    remove_from_group(data['mac'], data['name'])
     return '', 200
 
 @api.route('/groupDevices/<group>', methods=['GET'])
