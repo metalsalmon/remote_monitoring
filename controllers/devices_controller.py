@@ -183,7 +183,7 @@ def remove_from_group(mac, group_name):
     device = Device.query.filter(Device.mac == mac).first()
     device.owner = None
     db.session.commit()
-    send_notification(device.ip, 'removed from group_name')
+    send_notification(device.ip, 'removed from '+ group_name)
 
 def update_group(group_name, old_group_name):
     group = Group.query.filter(Group.name == old_group_name).first()
