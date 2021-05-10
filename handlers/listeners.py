@@ -19,6 +19,7 @@ class KafkaClient():
         self.app = app
 
     def register_device_listener(self, mac):
+        
         self.register_kafka_listener(f"{mac}_DEVICE_INFO".replace(':',''), self.device_info_listener)
         self.register_kafka_listener(f"{mac}_CONFIG".replace(':',''), self.device_info_listener)
 
@@ -73,9 +74,13 @@ class KafkaClient():
         def connectivity():
             while True:
                 for item, value in self.timers.items():
-                    if time.monotonic() - value > 5:
+                    #print(item)
+                    #print(time.monotonic() - value)
+                    if time.monotonic() - value > 6:
                         with self.app.app_context():
                             device = Device.query.filter_by(mac = item).first()
+                            if device == None:
+                                self.timers[item] = time.monotonic()
                             if device.connected == True:
                                 device.connected = False
                                 db.session.commit()
@@ -94,18 +99,17 @@ class KafkaClient():
             print("Non registred device") 
 
     def all_devices_info_listener(self, data):
-        
         devices_controller.all_devices_info(self, data)
 
     def device_info_listener(self, data):
-        print(self.timers)
         device_info = json.loads(data.value.decode("utf-8"))
+        print(device_info)
         for item, value in self.timers.items():
             if item ==  device_info["mac"]:
                 self.timers[item] = time.monotonic()
                 with self.app.app_context():
                     device = Device.query.filter_by(mac = item).first()
-                    if device.connected == False:
+                    if device != None and device.connected == False:
                         device.connected = True
                         db.session.commit()
                         socketio.emit('notifications', device.ip + ' connected')

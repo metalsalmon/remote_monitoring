@@ -14,10 +14,10 @@ def create_device_topic(mac):
 
     topics = []
     try:
-        topics.append(NewTopic(name=f"{mac}_MANAGEMENT".replace(':',""), num_partitions=1, replication_factor=1))
+        topics.append(NewTopic(name=f"{mac}_MANAGEMENT".replace(':',''), num_partitions=1, replication_factor=1))
         topics.append(NewTopic(name=f"{mac}_DEVICE_INFO".replace(':',''), num_partitions=1, replication_factor=1))
         topics.append(NewTopic(name=f"{mac}_CONFIG".replace(':',''), num_partitions=1, replication_factor=1))
-        timers[mac] = time.monotonic()
+        kafka_client.timers[mac] = time.monotonic()
         
 
         kafka_admin_client.create_topics(new_topics=topics, validate_only=False)

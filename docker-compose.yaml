@@ -22,8 +22,8 @@ services:
       KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://${KAFKA_HOST}:${KAFKA_PORT}"
     depends_on:
       - zookeeper
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
 
   postgres:
     container_name: postgres_container
@@ -64,8 +64,8 @@ services:
       - .:/backend
 
 volumes:
-  kafka_data:
-    driver: local
+#  kafka_data:
+#    driver: local
   pgadmin_data:
     driver: local
   postgres_data:

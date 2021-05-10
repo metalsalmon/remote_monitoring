@@ -38,6 +38,7 @@ def device_info(self, data):
                 create_device_topic(device_info['mac'])
 
                 for package in device_info['packages']:
+                    #print(package)
                     if Package.query.filter_by(name = package['package'], owner = device_new).first() is None:  
                         add_package = Package(name = package['package'], version = package['version'], latest_version = package['latest_version'], owner = device_new)    
                         db.session.add(add_package)
