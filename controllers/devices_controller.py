@@ -213,8 +213,7 @@ def download_agent(ip, username, ssh_password, sudo_password, agent_os):
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(ip, username=username, password=ssh_password)
         sftp = ssh.open_sftp()
-        
-        sftp.put(os.getenv('AGENT_LOCATION'), remote_location)
+        sftp.put(os.getenv('AGENT_LOCAL_LOCATION')+ '-' + ('ubuntu' if agent_os == 'ubuntu' else 'pi'), remote_location)
         sftp.put(os.getenv('AGENT_CONFIG_LOCATION'), remote_config_location)
         sftp.close()
 
