@@ -86,29 +86,6 @@ def get_device_packages(mac):
         [item.summary() for item in device_packages]
     )
 
-def download_agent(ip, username, ssh_password, sudo_password, agent_os):
-    try:
-        print(ip)
-        print(username)
-        print(ssh_password)
-        print(sudo_password)
-        print(agent_os)
-        code = subprocess.run(['sudo', 'sshpass' , '-p' , sudo_password , 'scp', os.getenv('AGENT_LOCATION'), username + '@' + ip + ':' + os.getenv('REMOTE_AGENT_LOCATION') + os.getenv("AGENT_NAME")])
-
-        if code.returncode == 0:
-            agent_location = os.getenv('REMOTE_AGENT_LOCATION') + os.getenv("AGENT_NAME")
-            command = "sudo -S -p '' %s" % agent_location
-            ssh = paramiko.SSHClient()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(ip, username=username, password=ssh_password)
-            stdin, stdout, stderr = ssh.exec_command(command=command)
-            stdin.write(sudo_password + "\n")
-            stdin.flush()
-
-    except Exception as e:
-        print('error: ')
-        print(e)
-
 def send_notification(ip, msg):
     socketio.emit('notifications',ip + " -> " + msg)    
 
@@ -221,3 +198,38 @@ def get_group_packages(group_name):
     return json.dumps(
         list({v['name']:v for v in [item.summary() for item in packages]}.values())
     )
+
+def download_agent(ip, username, ssh_password, sudo_password, agent_os):
+    try:
+        remote_location = '/home/' + username + '/' + os.getenv("AGENT_NAME")
+        remote_config_location = '/home/' + username + '/' + 'config.json'
+
+        if os.getenv('CUSTOM_REMOTE_LOCATION') == 'TRUE':
+            remote_location= os.getenv('REMOTE_AGENT_LOCATION')+'/' + os.getenv("AGENT_NAME")
+            remote_config_location= os.getenv('REMOTE_AGENT_LOCATION')+'/' + 'config.json'       
+        
+        run_agent = "sudo -S -p '' %s" % remote_location
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(ip, username=username, password=ssh_password)
+        sftp = ssh.open_sftp()
+        
+        sftp.put(os.getenv('AGENT_LOCATION'), remote_location)
+        sftp.put(os.getenv('AGENT_CONFIG_LOCATION'), remote_config_location)
+        sftp.close()
+
+        ssh.exec_command("chmod +x " +remote_location)
+        stdin, stdout, stderr = ssh.exec_command(command=run_agent)
+        stdin.write(sudo_password + "\n")
+        stdin.flush()
+        ssh.close()
+
+    except Exception as e:
+        stdin, stdout, stderr = ssh.exec_command(command=run_agent)
+        stdin.write(sudo_password + "\n")
+        stdin.flush()
+        ssh.close()
+        send_notification(ip, 'unable to download')
+        print(e)
+
+            
