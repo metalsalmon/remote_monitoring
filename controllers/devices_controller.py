@@ -228,5 +228,3 @@ def download_agent(ip, username, ssh_password, sudo_password, agent_os):
         ssh.close()
         send_notification(ip, 'unable to download')
         print(e)
-
-            

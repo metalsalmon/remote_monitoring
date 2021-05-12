@@ -120,3 +120,8 @@ def groupManagement():
     version = data['version'] if action != 'remove' else ''
     management_controller.manage_group_app(action, data['group'], data['package'], version)
     return '', 200
+
+@api.route('/reboot', methods=['POST'])
+def reboot_device():
+    management_controller.reboot(json.loads(request.data.decode("utf-8"))['mac'])
+    return '', 200

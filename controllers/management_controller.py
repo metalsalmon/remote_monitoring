@@ -42,3 +42,14 @@ def update_all(mac):
     }
 
     producer.send(mac.replace(':', '')+'_MANAGEMENT', message)
+
+def reboot(mac):
+    device = Device.query.filter(Device.mac == mac).first()
+    task_new = Task(ip=device.ip, action='reboot', done=True, state='sent to the device' , owner = device)
+    db.session.add(task_new)
+    db.session.commit()
+
+    data_send = {'reboot' : mac} 
+    producer.send(mac.replace(':', '')+'_CONFIG', data_send)
+    task_new.task_message = data_send
+    db.session.commit()
