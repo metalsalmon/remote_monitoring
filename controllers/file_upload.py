@@ -10,7 +10,7 @@ import time
 
 def file_upload(file, file_type, path, mac): 
 
-    target=os.getenv("UPLOAD_FOLDER")
+    target='./UploadedFiles'
     if not os.path.isdir(target):
         os.mkdir(target)
 
@@ -33,6 +33,7 @@ def file_upload(file, file_type, path, mac):
     file.save(destination)
 
     data_send = {'fileDownload' : filename, 'location' : os.getenv('SERVER_IP')+'/api/uploads/', 'path' : path, 'type' : file_type, 'sequence_number' : task_new.id} 
+    print(data_send)
     producer.send(mac.replace(':', '')+'_CONFIG', data_send)
     task_new.task_message = data_send
     db.session.commit()

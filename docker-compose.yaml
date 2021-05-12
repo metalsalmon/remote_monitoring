@@ -36,8 +36,8 @@ services:
       TZ: 'Europe/Bratislava'
     ports:
       - ${DATABASE_PORT}:5432
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data
     
   pgadmin:
     container_name: pgadmin4_container
@@ -67,5 +67,5 @@ volumes:
 #    driver: local
   pgadmin_data:
     driver: local
-  postgres_data:
-    driver: local
+#  postgres_data:
+#    driver: local

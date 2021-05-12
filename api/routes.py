@@ -15,7 +15,7 @@ api = Blueprint('api', __name__, url_prefix='/api')
 
 @api.route('/uploads/<filename>', methods=['GET', 'POST'])
 def download(filename):
-    return send_from_directory(os.getenv("UPLOAD_FOLDER"), filename)
+    return send_from_directory('./UploadedFiles', filename)
 
 @api.route('/upload/<mac>', methods=['POST'])
 def fileUpload(mac):
