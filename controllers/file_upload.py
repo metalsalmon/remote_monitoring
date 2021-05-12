@@ -42,7 +42,7 @@ def group_file_upload(file, file_type, path, group_name):
 
     group = Group.query.filter(Group.name == group_name).first()
 
-    target=os.getenv("UPLOAD_FOLDER")
+    target='./UploadedFiles'
     if not os.path.isdir(target):
         os.mkdir(target)
 
