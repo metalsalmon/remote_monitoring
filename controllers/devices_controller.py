@@ -201,23 +201,21 @@ def get_group_packages(group_name):
 
 def download_agent(ip, username, ssh_password, sudo_password, agent_os):
     try:
-        remote_location = '/home/' + username + '/' + os.getenv("AGENT_NAME")
-        remote_config_location = '/home/' + username + '/' + 'config.json'
+        remote_location = '/home/' + username + '/'
 
         if os.getenv('CUSTOM_REMOTE_LOCATION') == 'TRUE':
-            remote_location= os.getenv('REMOTE_AGENT_LOCATION')+'/' + os.getenv("AGENT_NAME")
-            remote_config_location= os.getenv('REMOTE_AGENT_LOCATION')+'/' + 'config.json'       
+            remote_location= os.getenv('REMOTE_AGENT_LOCATION')+'/'      
         
-        run_agent = "sudo -S -p '' %s" % remote_location
+        run_agent = "sudo -S -p '' %s" % (remote_location  + os.getenv("AGENT_NAME"))
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(ip, username=username, password=ssh_password)
         sftp = ssh.open_sftp()
-        sftp.put(os.getenv('AGENT_LOCAL_LOCATION')+ '-' + ('ubuntu' if agent_os == 'ubuntu' else 'pi'), remote_location)
-        sftp.put(os.getenv('AGENT_CONFIG_LOCATION'), remote_config_location)
+        sftp.put(os.getenv('AGENT_LOCAL_LOCATION')+ '-' + ('ubuntu' if agent_os == 'ubuntu' else 'pi'), remote_location  + os.getenv("AGENT_NAME"))
+        sftp.put(os.getenv('AGENT_CONFIG_LOCATION'), remote_location + 'config.json')
         sftp.close()
 
-        ssh.exec_command("chmod +x " +remote_location)
+        ssh.exec_command("chmod +x " +remote_location + os.getenv("AGENT_NAME"))
         stdin, stdout, stderr = ssh.exec_command(command=run_agent)
         stdin.write(sudo_password + "\n")
         stdin.flush()
