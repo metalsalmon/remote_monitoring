@@ -21,7 +21,6 @@ class KafkaClient():
     def register_device_listener(self, mac):
         
         self.register_kafka_listener(f"{mac}_DEVICE_INFO".replace(':',''), self.device_info_listener)
-        self.register_kafka_listener(f"{mac}_CONFIG".replace(':',''), self.device_info_listener)
 
     def register_listeners(self):
         self.register_kafka_listener('MONITORING', self.monitoring_listener)
@@ -74,8 +73,6 @@ class KafkaClient():
         def connectivity():
             while True:
                 for item, value in self.timers.items():
-                    #print(item)
-                    #print(time.monotonic() - value)
                     if time.monotonic() - value > 6:
                         with self.app.app_context():
                             device = Device.query.filter_by(mac = item).first()
@@ -103,7 +100,6 @@ class KafkaClient():
 
     def device_info_listener(self, data):
         device_info = json.loads(data.value.decode("utf-8"))
-        print(device_info)
         for item, value in self.timers.items():
             if item ==  device_info["mac"]:
                 self.timers[item] = time.monotonic()
