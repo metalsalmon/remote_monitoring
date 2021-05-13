@@ -6,6 +6,7 @@ load_dotenv()
 from api.routes import api
 from models.base_model import initialize_db
 from handlers.kafka_client import initialize_kafka
+from handlers.producer_in import initialize_producer
 from api.errors import register_error_handlers
 from settings import base_config
 from ws.events import socketio
@@ -21,6 +22,8 @@ def create_app():
         register_error_handlers(app)
 
         app.register_blueprint(api)
+
+        initialize_producer()
 
         initialize_kafka(app)
 

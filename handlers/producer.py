@@ -4,8 +4,18 @@ import json
 load_dotenv()
 import os
 
+class ProducerKlient():
 
-producer = KafkaProducer(bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS'),
-                                    acks=1,
-                                    value_serializer=lambda x: json.dumps(x).encode('utf-8')
+    producer = None
+
+    def initialize_producer(self):
+        while(True):
+            self.producer = KafkaProducer(bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS'),
+                                        acks=1,
+                                        value_serializer=lambda x: json.dumps(x).encode('utf-8')
                                     )
+            if self.producer != None:
+                break
+
+
+

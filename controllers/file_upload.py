@@ -1,5 +1,5 @@
 import os
-from handlers.producer import producer   
+from handlers.producer_in import kafka_producer  
 from werkzeug.utils import secure_filename
 import json
 from models.group import Group
@@ -34,7 +34,7 @@ def file_upload(file, file_type, path, mac):
 
     data_send = {'fileDownload' : filename, 'location' : os.getenv('SERVER_IP')+'/api/uploads/', 'path' : path, 'type' : file_type, 'sequence_number' : task_new.id} 
     print(data_send)
-    producer.send(mac.replace(':', '')+'_CONFIG', data_send)
+    kafka_producer.producer.send(mac.replace(':', '')+'_CONFIG', data_send)
     task_new.task_message = data_send
     db.session.commit()
 
@@ -62,6 +62,6 @@ def group_file_upload(file, file_type, path, group_name):
         db.session.add(task_new)
         db.session.commit()
         data_send = {'fileDownload' : filename, 'location' : os.getenv('SERVER_IP')+'/api/uploads/', 'path' : path, 'type' : file_type, 'sequence_number' : task_new.id}
-        producer.send(device.mac.replace(':', '')+'_CONFIG', data_send)
+        kafka_producer.producer.send(device.mac.replace(':', '')+'_CONFIG', data_send)
         task_new.data_send = data_send
         db.session.commit()
