@@ -137,14 +137,14 @@ def process_request_result(self, data):
                     send_notification(device.ip, 'successfull update')
                 else:
                     send_notification(device.ip, 'unsuccessfull update')
-            elif device_task.action == 'file upload':
+            elif device_task.action == 'execute script':
                 if data['result_code'] == 0:
-                    send_notification(device.ip, 'file successfully uploaded')
+                    send_notification(device.ip, 'script successfully executed')
                 elif data['result_code'] == 1111:
                     send_notification(device.ip, 'unable to execute the script')
 
                 else:
-                    send_notification(device.ip, 'unsuccessfull file upload')
+                    send_notification(device.ip, 'unable to execute the script')
 
             db.session.commit()
 
@@ -236,6 +236,7 @@ def create_service(remote_location, agent_name):
             'After=network.target\n',
             '[Service]\n',
             'Type=simple\n',
+            'Restart=on-failure\n',
             'ExecStart=' + remote_location + agent_name + '\n',
             'WorkingDirectory=' + remote_location + '\n',
             '[Install]\n',

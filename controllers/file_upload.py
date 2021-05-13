@@ -10,6 +10,7 @@ import time
 
 def file_upload(file, file_type, path, mac): 
 
+    action = 'file upload'
     target='./UploadedFiles'
     if not os.path.isdir(target):
         os.mkdir(target)
@@ -18,16 +19,16 @@ def file_upload(file, file_type, path, mac):
         path = './'        
 
     filename = secure_filename(file.filename)
-    
-    device = Device.query.filter(Device.mac == mac).first()
-    task_new = Task(ip=device.ip, app=filename, action='file upload', done=False, state='sent to the device' , owner = device)
-    db.session.add(task_new)
-    db.session.commit()
-
 
     if file_type == 'script':
         path = './'
         filename = 'script'
+        action='execute script'
+    
+    device = Device.query.filter(Device.mac == mac).first()
+    task_new = Task(ip=device.ip, app=filename, action=action, done=False, state='sent to the device' , owner = device)
+    db.session.add(task_new)
+    db.session.commit()
 
     destination="/".join([target, filename])
     file.save(destination)
@@ -42,6 +43,8 @@ def group_file_upload(file, file_type, path, group_name):
 
     group = Group.query.filter(Group.name == group_name).first()
 
+    action='file upload'
+    
     target='./UploadedFiles'
     if not os.path.isdir(target):
         os.mkdir(target)
@@ -53,12 +56,13 @@ def group_file_upload(file, file_type, path, group_name):
     if file_type == 'script':
         path = './'
         filename = 'script'
+        action='execute script'
 
     destination="/".join([target, filename])
     file.save(destination)
     
     for device in Device.query.filter(Device.owner == group).all():
-        task_new = Task(ip=device.ip, app=filename, action='file upload', done=False, state='sent to the device' , owner = device)
+        task_new = Task(ip=device.ip, app=filename, action=action, done=False, state='sent to the device' , owner = device)
         db.session.add(task_new)
         db.session.commit()
         data_send = {'fileDownload' : filename, 'location' : os.getenv('SERVER_IP')+'/api/uploads/', 'path' : path, 'type' : file_type, 'sequence_number' : task_new.id}

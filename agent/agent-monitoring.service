@@ -2,6 +2,7 @@
 After=network.target
 [Service]
 Type=simple
+Restart=on-failure
 ExecStart=/home/adam/agentv1
 WorkingDirectory=/home/adam/
 [Install]
