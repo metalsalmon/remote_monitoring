@@ -111,6 +111,7 @@ def process_request_result(self, data):
                     send_notification(device.ip, device_task.app + ': already installed')
                 else:
                     send_notification(device.ip, device_task.app + ': unable to install')
+                    device_task.state = 'error'
 
             elif device_task.action == 'remove':
                 if data['result_code'] == 0:
@@ -120,6 +121,7 @@ def process_request_result(self, data):
                     device_task.message = 'is not installed'
                     send_notification(device.ip, device_task.app + ': is not installed')
                 else:
+                    device_task.state = 'error'
                     send_notification(device.ip, device_task.app + ': unable to remove')
 
             elif device_task.action == 'update':
@@ -136,14 +138,17 @@ def process_request_result(self, data):
                 if data['result_code'] == 0:
                     send_notification(device.ip, 'successfull update')
                 else:
+                    device_task.state = 'error'
                     send_notification(device.ip, 'unsuccessfull update')
             elif device_task.action == 'execute script':
                 if data['result_code'] == 0:
                     send_notification(device.ip, 'script successfully executed')
                 elif data['result_code'] == 1111:
+                    device_task.state = 'error'
                     send_notification(device.ip, 'unable to execute the script')
 
                 else:
+                    device_task.state = 'error'
                     send_notification(device.ip, 'unable to execute the script')
 
             db.session.commit()
