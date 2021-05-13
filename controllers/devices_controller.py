@@ -206,25 +206,37 @@ def download_agent(ip, username, ssh_password, sudo_password, agent_os):
         if os.getenv('CUSTOM_REMOTE_LOCATION') == 'TRUE':
             remote_location= os.getenv('REMOTE_AGENT_LOCATION')+'/'      
         
-        run_agent = "sudo -S -p '' %s" % (remote_location  + os.getenv("AGENT_NAME"))
+        create_service(remote_location, os.getenv("AGENT_NAME"))
+        #run_agent = "sudo -S -p '' %s" % (remote_location  + os.getenv("AGENT_NAME"))
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(ip, username=username, password=ssh_password)
         sftp = ssh.open_sftp()
         sftp.put(os.getenv('AGENT_LOCAL_LOCATION')+ '-' + ('ubuntu' if agent_os == 'ubuntu' else 'pi'), remote_location  + os.getenv("AGENT_NAME"))
         sftp.put(os.getenv('AGENT_CONFIG_LOCATION'), remote_location + 'config.json')
+        sftp.put(os.getenv('AGENT_SERVICE_LOCATION'), remote_location + 'agent-monitoring.service')
         sftp.close()
 
         ssh.exec_command("chmod +x " +remote_location + os.getenv("AGENT_NAME"))
-        stdin, stdout, stderr = ssh.exec_command(command=run_agent)
+
+        stdin, stdout, stderr= ssh.exec_command(add_service)
         stdin.write(sudo_password + "\n")
         stdin.flush()
         ssh.close()
 
     except Exception as e:
-        stdin, stdout, stderr = ssh.exec_command(command=run_agent)
-        stdin.write(sudo_password + "\n")
-        stdin.flush()
-        ssh.close()
-        send_notification(ip, 'unable to download')
         print(e)
+
+
+def create_service(remote_location, agent_name):
+    with open(('./agent/agent-monitoring.service'), 'w') as file:
+        file.writelines(
+            ['[Unit]\n',
+            'After=network.target\n',
+            '[Service]\n',
+            'Type=simple\n',
+            'ExecStart=' + remote_location + agent_name + '\n',
+            'WorkingDirectory=' + remote_location + '\n',
+            '[Install]\n',
+            'WantedBy=multi-user.target\n',
+            ])
