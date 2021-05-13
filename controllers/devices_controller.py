@@ -218,7 +218,8 @@ def download_agent(ip, username, ssh_password, sudo_password, agent_os):
         sftp.close()
 
         ssh.exec_command("chmod +x " +remote_location + os.getenv("AGENT_NAME"))
-
+        add_service='sudo -S systemctl stop agent-monitoring.service;sudo -S mv {}agent-monitoring.service /etc/systemd/system/agent-monitoring.service;sudo -S chmod 664 /etc/systemd/system/agent-monitoring.service;sudo -S systemctl daemon-reload;sudo -S systemctl enable agent-monitoring.service;sudo -S systemctl start agent-monitoring.service'.format(remote_location)
+        print('sudo -S mv {}agent-monitoring.service /etc/systemd/system/agent-monitoring.service'.format(remote_location))
         stdin, stdout, stderr= ssh.exec_command(add_service)
         stdin.write(sudo_password + "\n")
         stdin.flush()
