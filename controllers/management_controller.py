@@ -53,3 +53,10 @@ def reboot(mac):
     kafka_producer.producer.send(mac.replace(':', '')+'_CONFIG', data_send)
     task_new.task_message = data_send
     db.session.commit()
+
+def reboot_group(group_name):
+    group = Group.query.filter(Group.name == group_name).first()
+    group_devices = Device.query.filter(Device.owner == group).all()
+    
+    for device in group_devices:
+        reboot(device.mac)

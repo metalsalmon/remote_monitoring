@@ -123,5 +123,9 @@ def groupManagement():
 
 @api.route('/reboot', methods=['POST'])
 def reboot_device():
-    management_controller.reboot(json.loads(request.data.decode("utf-8"))['mac'])
+    data = json.loads(request.data.decode("utf-8"))
+    if data['type'] == 'device':
+        management_controller.reboot(data['mac'])
+    else:
+        management_controller.reboot_group(data['type'])
     return '', 200
