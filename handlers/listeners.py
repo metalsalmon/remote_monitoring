@@ -71,19 +71,25 @@ class KafkaClient():
     def connectivity_regitster(self):
                
         def connectivity():
-            while True:
-                for item, value in self.timers.items():
-                    if time.monotonic() - value > 6:
-                        with self.app.app_context():
-                            device = Device.query.filter_by(mac = item).first()
-                            if device == None:
-                                self.timers[item] = time.monotonic()
-                            if device.connected == True:
-                                device.connected = False
-                                db.session.commit()
-                                socketio.emit('notifications', device.ip + ' disconnected')          
-                time.sleep(2)
-    
+            
+                while True:
+                    print(self.timers)
+                    for item, value in self.timers.items():
+                        try:
+                            if time.monotonic() - value > 6:
+                                with self.app.app_context():
+                                    device = Device.query.filter_by(mac = item).first()
+                                    if device == None:
+                                        self.timers[item] = time.monotonic()
+                                    if device.connected == True:
+                                        device.connected = False
+                                        db.session.commit()
+                                        socketio.emit('notifications', device.ip + ' disconnected') 
+                        except Exception as e:
+                            print(e)         
+                    time.sleep(4)
+            
+
         t_connectivity = threading.Thread()
         t_connectivity._target = connectivity
         t_connectivity.daemon = True

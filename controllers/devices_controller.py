@@ -205,7 +205,9 @@ def get_group_packages(group_name):
     )
 
 def download_agent(ip, username, ssh_password, sudo_password, agent_os):
+
     try:
+        delete_agent(ip, username, ssh_password, sudo_password)
         remote_location = '/home/' + username + '/'
 
         if os.getenv('CUSTOM_REMOTE_LOCATION') == 'TRUE':
@@ -221,18 +223,16 @@ def download_agent(ip, username, ssh_password, sudo_password, agent_os):
         sftp.put(os.getenv('AGENT_CONFIG_LOCATION'), remote_location + 'config.json')
         sftp.put(os.getenv('AGENT_SERVICE_LOCATION'), remote_location + 'agent-monitoring.service')
         sftp.close()
-
         ssh.exec_command("chmod +x " +remote_location + os.getenv("AGENT_NAME"))
         add_service='sudo -S systemctl stop agent-monitoring.service;sudo -S mv {}agent-monitoring.service /etc/systemd/system/agent-monitoring.service;sudo -S chmod 664 /etc/systemd/system/agent-monitoring.service;sudo -S systemctl daemon-reload;sudo -S systemctl enable agent-monitoring.service;sudo -S systemctl start agent-monitoring.service'.format(remote_location)
-        print('sudo -S mv {}agent-monitoring.service /etc/systemd/system/agent-monitoring.service'.format(remote_location))
         stdin, stdout, stderr= ssh.exec_command(add_service)
         stdin.write(sudo_password + "\n")
         stdin.flush()
         ssh.close()
 
     except Exception as e:
+        send_notification(ip, 'unable to connect')
         print(e)
-
 
 def create_service(remote_location, agent_name):
     with open(('./agent/agent-monitoring.service'), 'w') as file:
@@ -247,3 +247,40 @@ def create_service(remote_location, agent_name):
             '[Install]\n',
             'WantedBy=multi-user.target\n',
             ])
+
+def delete_agent(ip, username, ssh_password, sudo_password):
+    try:
+        remote_location = '/home/' + username + '/'
+
+        if os.getenv('CUSTOM_REMOTE_LOCATION') == 'TRUE':
+            remote_location= os.getenv('REMOTE_AGENT_LOCATION')+'/'      
+        
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(ip, username=username, password=ssh_password)
+
+        remove_service='sudo -S systemctl stop agent-monitoring.service;sudo -S rm {}agent-monitoring.service;sudo systemctl disable agent-monitoring.service;sudo rm /etc/systemd/system/agent-monitoring.service;sudo systemctl daemon-reload;sudo systemctl reset-failed; '.format(remote_location)
+
+        stdin, stdout, stderr= ssh.exec_command(remove_service)
+        stdin.write(sudo_password + "\n")
+        stdin.flush()
+        ssh.close()
+
+        return True
+
+    except Exception as e:
+        return False
+        print(e)
+
+def remove_agent(ip, username, ssh_password, sudo_password):
+    device = Device.query.filter(Device.ip == ip).first()
+
+    if device is not None:
+        if delete_agent(ip, username, ssh_password, sudo_password):
+            try:
+                db.session.delete(device)
+                db.session.commit()
+                send_notification(ip, 'removed')
+            except Exception as e:
+                print(e)
+                print('unable to delete')

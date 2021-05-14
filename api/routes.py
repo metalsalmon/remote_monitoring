@@ -6,7 +6,7 @@ import logging
 from werkzeug.utils import secure_filename
 import json
 from controllers import monitoring_controller, management_controller
-from controllers.devices_controller import get_device, get_devices, get_device_packages, get_tasks, download_agent, get_groups, add_group, remove_from_group, add_to_group, update_group, delete_group, get_group_devices, get_group_packages
+from controllers.devices_controller import get_device, get_devices, get_device_packages, remove_agent, get_tasks, download_agent, get_groups, add_group, remove_from_group, add_to_group, update_group, delete_group, get_group_devices, get_group_packages
 from controllers.file_upload import file_upload, group_file_upload
 from ws.events import socketio
 
@@ -128,4 +128,10 @@ def reboot_device():
         management_controller.reboot(data['mac'])
     else:
         management_controller.reboot_group(data['type'])
+    return '', 200
+
+@api.route('/remove', methods=['POST'])
+def remove_device():
+    data = json.loads(request.data.decode("utf-8"))
+    remove_agent(data['ip'], data['username'], data['sshPass'], data['sudoPass'])
     return '', 200

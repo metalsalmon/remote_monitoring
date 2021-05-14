@@ -52,7 +52,7 @@ def process_msg(self, data):
                 message = '[{}] RAM usage {}%'.format(data["time"], data['ram_usage'])
                 store_alert(message, data)
             if data["cpu_usage"] > 98:
-                message = '[{}] CPU usage {}%'.format(data["time"], data['ram_usage'])
+                message = '[{}] CPU usage {}%'.format(data["time"], data['cpu_usage'])
                 store_alert(message, data)
             if data["disk_space"] - data['used_disk_space'] < 0.2:
                 message = '[{}] Less than {} GB free space remaining'.format(data["time"], round((data["disk_space"] - data['used_disk_space']), 4))
