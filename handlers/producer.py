@@ -1,15 +1,24 @@
 from kafka import KafkaProducer
 from dotenv import load_dotenv
+import json
 load_dotenv()
 import os
 
-def create_producer():
+class ProducerKlient():
+
     producer = None
-    while producer is None:
-        try:
-            producer = KafkaProducer(bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS'))
-        except:
-            pass
+
+    def initialize_producer(self):
+        while(True):
+            try:
+                self.producer = KafkaProducer(bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS'),
+                                            acks=1,
+                                            value_serializer=lambda x: json.dumps(x).encode('utf-8')
+                                        )
+                if self.producer != None:
+                    break
+            except Exception as e:
+                print(e)   
 
 
-    return producer
+

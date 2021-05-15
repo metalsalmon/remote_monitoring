@@ -5,28 +5,28 @@ from dotenv import load_dotenv
 load_dotenv()
 from api.routes import api
 from models.base_model import initialize_db
-from handlers.listeners import KafkaConsumer
+from handlers.kafka_client import initialize_kafka
+from handlers.producer_in import initialize_producer
 from api.errors import register_error_handlers
+from settings import base_config
+from ws.events import socketio
 
 def create_app():
     app = Flask(__name__, instance_relative_config=False)
-
-    CORS(app)
-
-    app.secret_key = os.urandom(24)
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DB_CONNECTION")
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    #app.config['FLASK_ENV'] = True
-
-    register_error_handlers(app)
-
-    app.register_blueprint(api)
-    
+    app.config.from_object(base_config.BaseConfig)
     initialize_db(app)
+    
+    if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        CORS(app)
 
-    omg = KafkaConsumer(app)
-    omg.register_listeners()
+        register_error_handlers(app)
+
+        app.register_blueprint(api)
+
+        initialize_producer()
+
+        initialize_kafka(app)
+
+        socketio.init_app(app)
 
     return app
-
-app = create_app()

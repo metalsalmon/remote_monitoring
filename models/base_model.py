@@ -9,14 +9,15 @@ db = SQLAlchemy()
 def initialize_db(app):
     app.app_context().push()
     db.init_app(app)
-    #with app.app_context():
-    #    db.init_app(app)
     #migrate = Migrate(app, db, compare_type=True)
-    #db.create_all()
+    db.create_all()
 
 
 class BaseModel(db.Model):
     __abstract__ = True
+
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
 
     def get(self, **kwargs):
         try:
@@ -72,3 +73,5 @@ class BaseModel(db.Model):
 
     def save(self):
         db.session.commit()
+
+    

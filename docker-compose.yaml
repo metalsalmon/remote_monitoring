@@ -18,25 +18,50 @@ services:
     environment:
       KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_HOST}
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOO_PORT}
+      KAFKA_BROKER_ID: 500
+      KAFKA_offsets_topic_replication_factor: 3
       KAFKA_CREATE_TOPICS: ${KAFKA_TOPICS}
       KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://${KAFKA_HOST}:${KAFKA_PORT}"
     depends_on:
       - zookeeper
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
+
+  kafka2:
+    image: wurstmeister/kafka
+    ports:
+      - 9095:9092
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_HOST}
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOO_PORT}
+      KAFKA_BROKER_ID: 501
+      KAFKA_ADVERTISED_PORT: 9095
+      KAFKA_offsets_topic_replication_factor: 3
+
+  kafka3:
+    image: wurstmeister/kafka
+    ports:
+      - 9097:9092
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_HOST}
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOO_PORT}
+      KAFKA_BROKER_ID: 502
+      KAFKA_ADVERTISED_PORT: 9097
+      KAFKA_offsets_topic_replication_factor: 3
 
   postgres:
     container_name: postgres_container
     image: postgres
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_NAME}
-      POSTGRES_PASSWORD: ${POSTGRES_PW}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASS}
+      POSTGRES_DB: ${DATABASE_NAME}
+      TZ: 'Europe/Bratislava'
     ports:
-      - ${POSTGRES_PORT}:5432
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ${DATABASE_PORT}:5432
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data
     
   pgadmin:
     container_name: pgadmin4_container
@@ -49,8 +74,8 @@ services:
       - ${PG_PORT}:80
     depends_on: 
       - postgres
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
+#    volumes:
+#      - pgadmin_data:/var/lib/pgadmin
 
   app:
     container_name: app_container
@@ -58,14 +83,15 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - ${FLASK_PORT}:5000
-    volumes:
-      - .:/backend
+      - ${FLASK_RUN_PORT}:5000
+    depends_on: 
+      - postgres
+      - kafka
 
-volumes:
-  kafka_data:
-    driver: local
-  pgadmin_data:
-    driver: local
-  postgres_data:
-    driver: local
+#volumes:
+#  kafka_data:
+#    driver: local
+#  pgadmin_data:
+#    driver: local
+#  postgres_data:
+#    driver: local
