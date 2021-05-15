@@ -44,9 +44,9 @@ class KafkaClient():
             for device in devices:
                 device.connected = False
                 db.session.commit()
-                topics.append(NewTopic(name=f"{device.mac}_MANAGEMENT".replace(':',''), num_partitions=1, replication_factor=1))
-                topics.append(NewTopic(name=f"{device.mac}_DEVICE_INFO".replace(':',''), num_partitions=1, replication_factor=1))
-                topics.append(NewTopic(name=f"{device.mac}_CONFIG".replace(':',''), num_partitions=1, replication_factor=1))
+                topics.append(NewTopic(name=f"{device.mac}_MANAGEMENT".replace(':',''), num_partitions=os.getenv('KAFKA_PARTITIONS'), replication_factor=os.getenv('KAFKA_REPL_FACTOR')))
+                topics.append(NewTopic(name=f"{device.mac}_DEVICE_INFO".replace(':',''), num_partitions=os.getenv('KAFKA_PARTITIONS'), replication_factor=os.getenv('KAFKA_REPL_FACTOR')))
+                topics.append(NewTopic(name=f"{device.mac}_CONFIG".replace(':',''), num_partitions=os.getenv('KAFKA_PARTITIONS'), replication_factor=os.getenv('KAFKA_REPL_FACTOR')))
                 self.timers[device.mac] = time.monotonic()
 
             kafka_admin_client.create_topics(new_topics=topics, validate_only=False)

@@ -146,10 +146,15 @@ def process_request_result(self, data):
                 elif data['result_code'] == 1111:
                     device_task.state = 'error'
                     send_notification(device.ip, 'unable to execute the script')
-
                 else:
                     device_task.state = 'error'
                     send_notification(device.ip, 'unable to execute the script')
+            elif device_task.action == 'file upload':
+                if data['result_code'] == 0:
+                    send_notification(device.ip, 'file successfully uploaded')
+                else:
+                    device_task.state = 'error'
+                    send_notification(device.ip, 'unable to upload file')
 
             db.session.commit()
 

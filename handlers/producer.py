@@ -10,12 +10,15 @@ class ProducerKlient():
 
     def initialize_producer(self):
         while(True):
-            self.producer = KafkaProducer(bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS'),
-                                        acks=1,
-                                        value_serializer=lambda x: json.dumps(x).encode('utf-8')
-                                    )
-            if self.producer != None:
-                break
+            try:
+                self.producer = KafkaProducer(bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS'),
+                                            acks=1,
+                                            value_serializer=lambda x: json.dumps(x).encode('utf-8')
+                                        )
+                if self.producer != None:
+                    break
+            except Exception as e:
+                print(e)   
 
 
 
