@@ -93,12 +93,16 @@ def process_request_result(self, data):
     with self.app.app_context():
         device = Device.query.filter(Device.mac == data['mac']).first()
         device_task = Task.query.filter(Task.device_id == device.id, Task.done == False, Task.id == data['sequence_number']).first()
-        if device_task is not None: 
+        
+        if device_task is not None:
             device_task.result =  'sucess' if data['result_code'] == 0 or data['result_code'] == 1000  else 'error'
             device_task.message = data['message']
             device_task.done = True
             device_task.state = 'finished'
             device_task.finished = db.func.now()
+
+            if data['result_code'] == 100:
+                device_task.message = 'Unable to locate package'       
 
             if device_task.action == 'install':            
                 if data['result_code'] == 0:
