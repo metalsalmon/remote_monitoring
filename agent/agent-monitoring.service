@@ -3,7 +3,7 @@ After=network.target
 [Service]
 Type=simple
 Restart=on-failure
-ExecStart=/home/pi/agentv1
-WorkingDirectory=/home/pi/
+ExecStart=/home/adam/agentv1
+WorkingDirectory=/home/adam/
 [Install]
 WantedBy=multi-user.target
